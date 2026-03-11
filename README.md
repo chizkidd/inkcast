@@ -93,6 +93,7 @@ inkcast/
 ├── .gitignore
 ├── docs/
 │   └── shortcut-setup.md   # Detailed iOS shortcut instructions
+│   └── index.html
 └── .github/
     └── FUNDING.yml
 ```
@@ -124,6 +125,7 @@ inkcast/
 
 ## Roadmap (Next Steps)
 
+- [ ] Swap to ElevenLabs/OpenAI/Google Cloud TTS API
 - [ ] Bookmarks within chapters
 - [ ] Sleep timer
 - [ ] Font size / reading view toggle

@@ -394,7 +394,7 @@
   }
   .ctrl-btn.play-btn:hover { background: var(--amber-light); }
 
-  .speed-row { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+  .speed-row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
 
   .speed-label {
     font-family: var(--mono);
@@ -423,20 +423,166 @@
     border-color: var(--amber);
   }
 
-  .voice-select {
-    background: rgba(245,240,232,0.08);
-    border: 1px solid rgba(245,240,232,0.12);
-    color: rgba(245,240,232,0.7);
+  /* Voice selector row in player bar */
+  .voice-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .voice-current {
     font-family: var(--mono);
     font-size: 0.62rem;
-    padding: 0.18rem 0.4rem;
+    color: rgba(245,240,232,0.55);
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .voice-current span { color: rgba(245,240,232,0.85); }
+
+  .voice-settings-btn {
+    background: rgba(245,240,232,0.08);
+    border: 1px solid rgba(245,240,232,0.12);
+    color: rgba(245,240,232,0.6);
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    padding: 0.2rem 0.6rem;
     border-radius: 2px;
     cursor: pointer;
-    max-width: 140px;
-    flex: 1;
+    transition: all 0.15s;
+    white-space: nowrap;
   }
-  .voice-select option { background: var(--ink); color: var(--paper); }
+  .voice-settings-btn:hover { background: var(--amber); color: var(--ink); border-color: var(--amber); }
 
+  /* ---- VOICE MODAL ---- */
+  #voice-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 400;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    pointer-events: none;
+  }
+  #voice-modal.open { pointer-events: all; }
+
+  .voice-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(26,18,8,0.55);
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+  #voice-modal.open .voice-modal-backdrop { opacity: 1; }
+
+  .voice-modal-sheet {
+    position: relative;
+    background: var(--paper);
+    width: 100%;
+    max-width: 520px;
+    border-radius: 12px 12px 0 0;
+    padding: 1rem 1.5rem 2.5rem;
+    transform: translateY(100%);
+    transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+    border-top: 2px solid var(--amber);
+    max-height: 90dvh;
+    overflow-y: auto;
+  }
+  #voice-modal.open .voice-modal-sheet { transform: translateY(0); }
+
+  .voice-modal-handle {
+    width: 36px;
+    height: 3px;
+    background: var(--cream);
+    border-radius: 2px;
+    margin: 0 auto 1.25rem;
+  }
+
+  .voice-modal-title {
+    font-family: var(--serif);
+    font-size: 1.3rem;
+    font-style: italic;
+    margin-bottom: 0.3rem;
+  }
+
+  .voice-modal-subtitle {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    margin-bottom: 1.5rem;
+    line-height: 1.7;
+  }
+
+  .voice-group { margin-bottom: 1.25rem; }
+
+  .voice-group-label {
+    font-family: var(--mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+  }
+
+  .voice-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .voice-chip {
+    background: var(--cream);
+    border: 1px solid rgba(26,18,8,0.1);
+    border-radius: 20px;
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    padding: 0.35rem 0.85rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--ink);
+  }
+  .voice-chip:hover { border-color: var(--amber); color: var(--amber); }
+  .voice-chip.active { background: var(--amber); border-color: var(--amber); color: var(--ink); font-weight: 700; }
+  .voice-chip.unavailable { opacity: 0.3; cursor: default; }
+
+  .voice-modal-tip {
+    background: var(--amber-dim);
+    border-left: 3px solid var(--amber);
+    padding: 0.85rem 1rem;
+    border-radius: 0 4px 4px 0;
+    margin-top: 1.25rem;
+  }
+
+  .voice-modal-tip p {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    color: var(--ink);
+    line-height: 1.8;
+  }
+
+  .voice-modal-tip strong { color: var(--amber); }
+
+  .voice-modal-close {
+    display: block;
+    width: 100%;
+    margin-top: 1.25rem;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    padding: 0.85rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .voice-modal-close:hover { background: #2e2010; }
+
+  /* ---- LOADING ---- */
   #loading {
     position: fixed;
     inset: 0;
@@ -579,8 +725,55 @@
         <button class="speed-btn" data-speed="1.5">1.5×</button>
         <button class="speed-btn" data-speed="2">2×</button>
       </div>
-      <select class="voice-select" id="voice-select" title="Voice"></select>
     </div>
+    <div class="voice-row">
+      <div class="voice-current">Voice: <span id="voice-current-label">loading...</span></div>
+      <button class="voice-settings-btn" id="open-voice-modal-btn">change voice</button>
+    </div>
+  </div>
+</div>
+
+<!-- Voice Modal -->
+<div id="voice-modal">
+  <div class="voice-modal-backdrop" id="voice-modal-backdrop"></div>
+  <div class="voice-modal-sheet">
+    <div class="voice-modal-handle"></div>
+    <div class="voice-modal-title">Voice Settings</div>
+    <div class="voice-modal-subtitle">
+      Select a voice below. Greyed out voices aren't installed on your device yet.
+    </div>
+
+    <div class="voice-group">
+      <div class="voice-group-label">US English</div>
+      <div class="voice-chips" id="chips-us"></div>
+    </div>
+
+    <div class="voice-group">
+      <div class="voice-group-label">UK English</div>
+      <div class="voice-chips" id="chips-uk"></div>
+    </div>
+
+    <div class="voice-group">
+      <div class="voice-group-label">AU / Other English</div>
+      <div class="voice-chips" id="chips-other"></div>
+    </div>
+
+    <div class="voice-group" id="group-all-voices" style="display:none">
+      <div class="voice-group-label">All Available Voices</div>
+      <div class="voice-chips" id="chips-all"></div>
+    </div>
+
+    <div class="voice-modal-tip">
+      <p>
+        <strong>Want better voices?</strong> On iPhone go to<br>
+        <strong>Settings → Accessibility → Spoken Content → Voices → English</strong><br>
+        and download <strong>Siri Voice 1</strong> or <strong>Siri Voice 2</strong> — they sound
+        significantly more natural. On the same screen, <strong>Daniel</strong> (UK) and
+        <strong>Karen</strong> (AU) are also excellent downloads.
+      </p>
+    </div>
+
+    <button class="voice-modal-close" id="close-voice-modal-btn">Done</button>
   </div>
 </div>
 
@@ -595,6 +788,37 @@
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
+// =============================================================================
+// TODO: UPGRADE TO OPENAI TTS
+// When you're ready to use OpenAI TTS for higher quality voices:
+//
+// 1. Add your API key (or fetch from your own backend to keep it secret)
+//    const OPENAI_API_KEY = 'sk-...';
+//
+// 2. Replace startSpeech() with this:
+//    async function startSpeech() {
+//      const ch = state.chapters[state.currentChapter];
+//      const text = ch.text.slice(state.charOffset);
+//      const res = await fetch('https://api.openai.com/v1/audio/speech', {
+//        method: 'POST',
+//        headers: { 'Authorization': `Bearer ${OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
+//        body: JSON.stringify({ model: 'tts-1', voice: state.openaiVoice, input: text })
+//      });
+//      const blob = await res.blob();
+//      const audio = new Audio(URL.createObjectURL(blob));
+//      audio.playbackRate = state.speed;
+//      audio.play();
+//      state.audioEl = audio;
+//      audio.onended = () => { ... auto advance chapter ... };
+//    }
+//
+// 3. Available voices: alloy, echo, fable, onyx, nova, shimmer
+//    onyx = deep male, nova = warm female, shimmer = expressive female
+//    alloy = neutral, echo = male, fable = storytelling
+//
+// Note: chunk text into ~4000 char pieces to stay under API limits per request.
+// =============================================================================
+
 // ---- STATE ----
 const state = {
   chapters: [],
@@ -606,44 +830,194 @@ const state = {
   words: [],
   charOffset: 0,
   bookId: '',
-  fileType: '', // 'epub' | 'pdf'
+  fileType: '',
 };
 
 const $ = id => document.getElementById(id);
-const uploadScreen   = $('upload-screen');
-const playerScreen   = $('player-screen');
-const playerBar      = $('player-bar');
-const fileInput      = $('file-input');
-const dropZone       = $('drop-zone');
-const textDisplay    = $('text-display');
-const chapterTitle   = $('chapter-title');
-const chapterMeta    = $('chapter-meta');
-const bookTitleTop   = $('book-title-display');
-const playerChName   = $('player-chapter-name');
-const playerPos      = $('player-pos');
-const progressFill   = $('progress-fill');
-const chapterList    = $('chapter-list');
-const chaptersPanel  = $('chapters-panel');
-const voiceSelect    = $('voice-select');
+const uploadScreen  = $('upload-screen');
+const playerScreen  = $('player-screen');
+const playerBar     = $('player-bar');
+const fileInput     = $('file-input');
+const dropZone      = $('drop-zone');
+const textDisplay   = $('text-display');
+const chapterTitle  = $('chapter-title');
+const chapterMeta   = $('chapter-meta');
+const bookTitleTop  = $('book-title-display');
+const playerChName  = $('player-chapter-name');
+const playerPos     = $('player-pos');
+const progressFill  = $('progress-fill');
+const chapterList   = $('chapter-list');
+const chaptersPanel = $('chapters-panel');
+const voiceModal    = $('voice-modal');
 
-// ---- VOICES ----
-let voices = [];
-function loadVoices() {
-  voices = speechSynthesis.getVoices();
-  const en = voices.filter(v => v.lang.startsWith('en'));
-  const pool = en.length ? en : voices;
-  voiceSelect.innerHTML = pool.map(v =>
-    `<option value="${voices.indexOf(v)}">${v.name.replace('Google ','').replace(' English','')}</option>`
-  ).join('');
-  const pref = voices.find(v => /samantha|karen|daniel|moira/i.test(v.name)) || pool[0];
-  if (pref) { state.voice = pref; voiceSelect.value = voices.indexOf(pref); }
+// ---- VOICE DEFINITIONS ----
+// Curated list of named voices to look for, grouped by region.
+// The browser will match these against whatever is installed on the device.
+const VOICE_GROUPS = {
+  us: [
+    { label: 'Samantha (US)',  match: /samantha/i },
+    { label: 'Alex (US)',      match: /\balex\b/i },
+    { label: 'Ava (US)',       match: /\bava\b/i },
+    { label: 'Siri 1 (US)',    match: /siri.*1/i },
+    { label: 'Siri 2 (US)',    match: /siri.*2/i },
+    { label: 'Google US',      match: /google.*us|us.*google/i },
+    { label: 'Zira (US)',      match: /zira/i },
+    { label: 'David (US)',     match: /\bdavid\b/i },
+    { label: 'Mark (US)',      match: /\bmark\b/i },
+  ],
+  uk: [
+    { label: 'Daniel (UK)',    match: /\bdaniel\b/i },
+    { label: 'Kate (UK)',      match: /\bkate\b/i },
+    { label: 'Serena (UK)',    match: /serena/i },
+    { label: 'Oliver (UK)',    match: /oliver/i },
+    { label: 'Google UK M',    match: /google.*uk.*male|uk.*male/i },
+    { label: 'Google UK F',    match: /google.*uk.*fem|uk.*fem/i },
+    { label: 'Hazel (UK)',     match: /hazel/i },
+    { label: 'George (UK)',    match: /george/i },
+  ],
+  other: [
+    { label: 'Karen (AU)',     match: /karen/i },
+    { label: 'Lee (AU)',       match: /\blee\b/i },
+    { label: 'Moira (IE)',     match: /moira/i },
+    { label: 'Fiona (Scot)',   match: /fiona/i },
+  ],
+};
+
+let allVoices = [];
+let voicesReady = false;
+
+function getInstalledVoices() {
+  return speechSynthesis.getVoices().filter(v => v.lang.startsWith('en'));
 }
-speechSynthesis.addEventListener('voiceschanged', loadVoices);
-loadVoices();
-voiceSelect.addEventListener('change', () => {
-  state.voice = voices[parseInt(voiceSelect.value)];
+
+function findVoice(matchRegex) {
+  return getInstalledVoices().find(v => matchRegex.test(v.name)) || null;
+}
+
+function bestDefaultVoice() {
+  // Priority order for default voice pick
+  const preferred = [
+    /siri.*voice.*[12]/i,
+    /samantha/i,
+    /daniel/i,
+    /karen/i,
+    /moira/i,
+    /alex/i,
+  ];
+  for (const p of preferred) {
+    const v = findVoice(p);
+    if (v) return v;
+  }
+  // Fallback: first English voice
+  return getInstalledVoices()[0] || null;
+}
+
+function buildVoiceModal() {
+  const installed = getInstalledVoices();
+
+  function makeChips(containerId, group) {
+    const container = $(containerId);
+    container.innerHTML = '';
+    let hasAny = false;
+    for (const def of group) {
+      const found = installed.find(v => def.match.test(v.name));
+      const chip = document.createElement('button');
+      chip.className = 'voice-chip' + (found ? '' : ' unavailable');
+      chip.textContent = def.label;
+      chip.title = found ? found.name : 'Not installed on this device';
+      if (found) {
+        chip.addEventListener('click', () => selectVoice(found, chip));
+        hasAny = true;
+      }
+      container.appendChild(chip);
+    }
+    return hasAny;
+  }
+
+  makeChips('chips-us', VOICE_GROUPS.us);
+  makeChips('chips-uk', VOICE_GROUPS.uk);
+  makeChips('chips-other', VOICE_GROUPS.other);
+
+  // Show all available voices as fallback group
+  const knownPatterns = [
+    ...VOICE_GROUPS.us,
+    ...VOICE_GROUPS.uk,
+    ...VOICE_GROUPS.other,
+  ].map(d => d.match);
+  const unknown = installed.filter(v => !knownPatterns.some(p => p.test(v.name)));
+  if (unknown.length) {
+    $('group-all-voices').style.display = 'block';
+    const allChips = $('chips-all');
+    allChips.innerHTML = '';
+    unknown.forEach(v => {
+      const chip = document.createElement('button');
+      chip.className = 'voice-chip';
+      chip.textContent = v.name.replace('Google ', '').replace(' English', '');
+      chip.title = v.name;
+      chip.addEventListener('click', () => selectVoice(v, chip));
+      allChips.appendChild(chip);
+    });
+  }
+
+  updateActiveChip();
+}
+
+function selectVoice(voice, chipEl) {
+  state.voice = voice;
+  updateActiveChip();
+  updateVoiceLabel();
+  try { localStorage.setItem('inkcast_voice', voice.name); } catch(e) {}
   if (state.isPlaying) { stopSpeech(); startSpeech(); }
+}
+
+function updateActiveChip() {
+  document.querySelectorAll('.voice-chip').forEach(c => {
+    c.classList.toggle('active',
+      state.voice && c.title === state.voice.name
+    );
+  });
+}
+
+function updateVoiceLabel() {
+  const label = $('voice-current-label');
+  if (!label) return;
+  if (state.voice) {
+    label.textContent = state.voice.name.replace('Google ', '').replace(' English', '');
+  } else {
+    label.textContent = 'none found';
+  }
+}
+
+function initVoices() {
+  allVoices = speechSynthesis.getVoices();
+  if (!allVoices.length) return;
+  voicesReady = true;
+
+  // Try to restore saved voice preference
+  let defaultVoice = bestDefaultVoice();
+  try {
+    const saved = localStorage.getItem('inkcast_voice');
+    if (saved) {
+      const found = allVoices.find(v => v.name === saved);
+      if (found) defaultVoice = found;
+    }
+  } catch(e) {}
+
+  state.voice = defaultVoice;
+  updateVoiceLabel();
+  buildVoiceModal();
+}
+
+speechSynthesis.addEventListener('voiceschanged', initVoices);
+initVoices();
+
+// ---- VOICE MODAL CONTROLS ----
+$('open-voice-modal-btn').addEventListener('click', () => {
+  buildVoiceModal();
+  voiceModal.classList.add('open');
 });
+$('close-voice-modal-btn').addEventListener('click', () => voiceModal.classList.remove('open'));
+$('voice-modal-backdrop').addEventListener('click', () => voiceModal.classList.remove('open'));
 
 // ---- LOADING ----
 function showLoading(msg) {
@@ -673,7 +1047,6 @@ async function parseEpub(file) {
     });
     const basePath = rootfilePath.includes('/') ? rootfilePath.split('/').slice(0,-1).join('/') + '/' : '';
 
-    // NCX titles
     let tocTitles = {};
     const ncxId = opf.querySelector('spine')?.getAttribute('toc');
     if (ncxId && manifest[ncxId]) {
@@ -688,7 +1061,6 @@ async function parseEpub(file) {
       } catch(e) {}
     }
 
-    // EPUB3 nav
     if (!Object.keys(tocTitles).length) {
       try {
         const navItem = Array.from(opf.querySelectorAll('manifest item'))
@@ -745,11 +1117,9 @@ async function parsePdf(file) {
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
     const numPages = pdf.numPages;
 
-    // Try to get outline (bookmarks)
     let outline = [];
     try { outline = await pdf.getOutline() || []; } catch(e) {}
 
-    // Map outline items to page numbers
     let chapterBreaks = [];
     if (outline.length > 0) {
       for (const item of outline) {
@@ -766,7 +1136,6 @@ async function parsePdf(file) {
       chapterBreaks.sort((a, b) => a.pageNum - b.pageNum);
     }
 
-    // Extract all page text
     const pageTexts = [];
     for (let i = 1; i <= numPages; i++) {
       if (i % 5 === 0) {
@@ -776,10 +1145,7 @@ async function parsePdf(file) {
       try {
         const page = await pdf.getPage(i);
         const content = await page.getTextContent();
-        // Preserve line breaks using transform y-position
-        let lastY = null;
-        let lines = [];
-        let currentLine = [];
+        let lastY = null, lines = [], currentLine = [];
         for (const item of content.items) {
           const y = item.transform[5];
           if (lastY !== null && Math.abs(y - lastY) > 5) {
@@ -806,7 +1172,6 @@ async function parsePdf(file) {
       }
     }
 
-    // Fallback: chunk pages if no usable outline
     if (chapters.length < 2) {
       chapters = [];
       const chunkSize = numPages <= 10 ? 1 : numPages <= 50 ? 3 : numPages <= 200 ? 5 : 10;
@@ -853,7 +1218,6 @@ async function handleFile(file) {
   state.fileType = result.type;
   state.bookId = file.name + '_' + file.size;
   bookTitleTop.textContent = result.title;
-
   $('panel-heading').textContent = result.type === 'pdf' ? 'Pages' : 'Chapters';
 
   const saved = loadProgress();
@@ -910,7 +1274,7 @@ function updateChapterListActive() {
   });
 }
 
-// ---- LOAD CHAPTER / SECTION ----
+// ---- LOAD CHAPTER ----
 function loadChapter(idx, charOffset) {
   state.currentChapter = idx;
   state.charOffset = charOffset || 0;
@@ -945,11 +1309,9 @@ function renderText(text, highlightWordIdx) {
     if (/\s+/.test(chunk)) {
       html += escHtml(chunk);
     } else {
-      if (wordI === highlightWordIdx) {
-        html += `<mark class="spoken-word" id="sw">${escHtml(chunk)}</mark>`;
-      } else {
-        html += escHtml(chunk);
-      }
+      html += wordI === highlightWordIdx
+        ? `<mark class="spoken-word" id="sw">${escHtml(chunk)}</mark>`
+        : escHtml(chunk);
       wordI++;
     }
   }
@@ -957,12 +1319,13 @@ function renderText(text, highlightWordIdx) {
 }
 
 // ---- SPEECH ----
+// TODO: swap to OpenAI TTS here when ready — see comment block at top of script
 function startSpeech() {
   if (!('speechSynthesis' in window)) { showToast('Speech not supported in this browser'); return; }
   speechSynthesis.cancel();
 
   const ch = state.chapters[state.currentChapter];
-  let text = state.charOffset > 0 && state.charOffset < ch.text.length
+  const text = state.charOffset > 0 && state.charOffset < ch.text.length
     ? ch.text.slice(state.charOffset)
     : ch.text;
 
@@ -979,11 +1342,7 @@ function startSpeech() {
     renderText(ch.text, wordsBeforeOffset + state.wordIndex - 1);
     const sw = document.getElementById('sw');
     if (sw) sw.scrollIntoView({ block: 'center', behavior: 'smooth' });
-    // Update charOffset approximation
-    state.charOffset = Math.min(
-      ch.text.length - 1,
-      (state.charOffset || 0) + (e.charIndex || 0)
-    );
+    state.charOffset = Math.min(ch.text.length - 1, (state.charOffset || 0) + (e.charIndex || 0));
     saveProgress();
     updateProgress();
     updatePosDisplay();
@@ -1095,7 +1454,7 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 3500);
 }
 
-// Wake lock
+// Wake lock — keep screen on while listening
 async function requestWakeLock() {
   if ('wakeLock' in navigator) {
     try { await navigator.wakeLock.request('screen'); } catch(e) {}
