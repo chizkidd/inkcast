@@ -1795,7 +1795,7 @@ function extractArticleLinks(doc, baseUrl) {
 
   doc.querySelectorAll('a[href]').forEach(a => {
     const text = a.textContent.trim();
-    if (text.length < 5 || text.length > 120) return;
+    if (text.length < 5 || text.length > 200) return;
 
     // Skip nav/utility containers
     const parent = a.closest('nav, header, footer, [role="navigation"], [role="banner"]');
