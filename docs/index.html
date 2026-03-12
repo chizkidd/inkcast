@@ -3,7 +3,37 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Inkcast</title>
+
+<!-- SEO -->
+<title>Inkcast — Listen to Any EPUB or PDF Book, Free</title>
+<meta name="description" content="Inkcast is a free, privacy-first audiobook player for EPUB and PDF files. No installs, no uploads, no account. Works in your browser on iPhone, Android, and desktop.">
+<meta name="keywords" content="epub reader, pdf audiobook, epub to audio, listen to epub, read epub aloud, pdf text to speech, audiobook player browser, free epub player">
+<meta name="author" content="chizkidd">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://chizkidd.github.io/inkcast/">
+
+<!-- Open Graph (social sharing) -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Inkcast — Listen to Any EPUB or PDF Book, Free">
+<meta property="og:description" content="Drop any EPUB or PDF and start listening. Free, private, on-device. No account needed.">
+<meta property="og:url" content="https://chizkidd.github.io/inkcast/">
+<meta property="og:site_name" content="Inkcast">
+
+<!-- Twitter card -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Inkcast — Listen to Any EPUB or PDF Book, Free">
+<meta name="twitter:description" content="Drop any EPUB or PDF and start listening. Free, private, on-device. No account needed.">
+
+<!-- iOS -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Inkcast">
+<meta name="theme-color" content="#f5f0e8">
+
+<!-- Inline favicon (no extra file needed) -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎙️</text></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231a1208'/><text x='50' y='62' font-size='55' text-anchor='middle'>🎙️</text></svg>">
+
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -299,6 +329,7 @@
   }
   .pill-epub { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(200,135,42,0.3); }
   .pill-pdf  { background: rgba(180,60,40,0.1); color: #b43c28; border: 1px solid rgba(180,60,40,0.25); }
+  .pill-web  { background: rgba(40,100,180,0.1); color: #2864b4; border: 1px solid rgba(40,100,180,0.25); }
 
   #text-display {
     font-size: 1.05rem;
@@ -423,7 +454,6 @@
     border-color: var(--amber);
   }
 
-  /* Voice selector row in player bar */
   .voice-row {
     display: flex;
     align-items: center;
@@ -634,6 +664,202 @@
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+
+  /* ---- UPLOAD TABS ---- */
+  .upload-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--cream);
+    width: 100%;
+    max-width: 420px;
+  }
+
+  .upload-tab {
+    flex: 1;
+    background: none;
+    border: none;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0.6rem 1rem;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.15s;
+  }
+
+  .upload-tab.active {
+    color: var(--amber);
+    border-bottom-color: var(--amber);
+  }
+
+  .upload-tab:hover { color: var(--ink); }
+
+  /* ---- URL INPUT PANEL ---- */
+  #url-panel {
+    display: none;
+    width: 100%;
+    max-width: 420px;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  #url-panel.active { display: flex; }
+
+  .url-input-wrap {
+    display: flex;
+    gap: 0.5rem;
+    align-items: stretch;
+  }
+
+  #url-input {
+    flex: 1;
+    background: rgba(200,135,42,0.04);
+    border: 2px solid var(--amber);
+    border-radius: 2px;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--ink);
+    padding: 0.75rem 1rem;
+    outline: none;
+    transition: background 0.15s;
+  }
+
+  #url-input:focus { background: var(--amber-dim); }
+  #url-input::placeholder { color: var(--muted); }
+
+  #url-go-btn {
+    background: var(--amber);
+    border: none;
+    color: var(--ink);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 0.75rem 1.25rem;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+
+  #url-go-btn:hover { background: var(--amber-light); }
+  #url-go-btn:disabled { opacity: 0.5; cursor: default; }
+
+  .url-hint {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    color: var(--muted);
+    line-height: 1.7;
+    text-align: center;
+  }
+
+  /* ---- ARTICLE PICKER MODAL ---- */
+  #article-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 400;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    pointer-events: none;
+  }
+
+  #article-modal.open { pointer-events: all; }
+
+  .article-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(26,18,8,0.55);
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+
+  #article-modal.open .article-modal-backdrop { opacity: 1; }
+
+  .article-modal-sheet {
+    position: relative;
+    background: var(--paper);
+    width: 100%;
+    max-width: 520px;
+    border-radius: 12px 12px 0 0;
+    border-top: 2px solid var(--amber);
+    padding: 1rem 0 2rem;
+    transform: translateY(100%);
+    transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+    max-height: 80dvh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  #article-modal.open .article-modal-sheet { transform: translateY(0); }
+
+  .article-modal-handle {
+    width: 36px;
+    height: 3px;
+    background: var(--cream);
+    border-radius: 2px;
+    margin: 0 auto 1rem;
+  }
+
+  .article-modal-title {
+    font-family: var(--serif);
+    font-size: 1.1rem;
+    font-style: italic;
+    padding: 0 1.5rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .article-modal-subtitle {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--muted);
+    padding: 0 1.5rem;
+    margin-bottom: 0.75rem;
+    letter-spacing: 0.06em;
+  }
+
+  .article-list {
+    overflow-y: auto;
+    flex: 1;
+    padding: 0 0.75rem;
+  }
+
+  .article-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--cream);
+    font-family: var(--serif);
+    font-size: 0.9rem;
+    color: var(--ink);
+    padding: 0.75rem 0.75rem;
+    cursor: pointer;
+    transition: background 0.12s;
+    border-radius: 2px;
+  }
+
+  .article-item:hover { background: var(--amber-dim); color: var(--amber); }
+  .article-item:last-child { border-bottom: none; }
+
+  .article-modal-close {
+    margin: 0.75rem 1.5rem 0;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    padding: 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
   @media (min-width: 600px) {
     .brand { font-size: 5rem; }
     .content-area { padding: 2rem 2rem 12rem; }
@@ -654,19 +880,51 @@
   <div class="brand">Ink<span>cast</span></div>
   <div class="tagline">listen to any book, anywhere</div>
 
-  <div class="drop-zone" id="drop-zone">
-    <input type="file" id="file-input" accept=".epub,.pdf">
-    <span class="drop-icon">📖</span>
-    <h2>Drop your book here (PDF/ePUB)</h2>
-    <p>or tap to choose a file</p>
-    <div class="format-badges">
-      <span class="format-badge badge-epub">epub</span>
-      <span class="format-badge badge-pdf">pdf</span>
+  <!-- Tabs -->
+  <div class="upload-tabs">
+    <button class="upload-tab active" id="tab-file">📖 File</button>
+    <button class="upload-tab" id="tab-url">🔗 URL</button>
+  </div>
+
+  <!-- File Panel -->
+  <div id="file-panel">
+    <div class="drop-zone" id="drop-zone">
+      <input type="file" id="file-input" accept=".epub,.pdf">
+      <span class="drop-icon">📖</span>
+      <h2>Drop your book here</h2>
+      <p>or tap to choose a file</p>
+      <div class="format-badges">
+        <span class="format-badge badge-epub">epub</span>
+        <span class="format-badge badge-pdf">pdf</span>
+      </div>
+    </div>
+    <div style="margin-top:1.5rem;font-family:'DM Mono',monospace;font-size:0.65rem;color:#8a7a68;text-align:center;line-height:1.8">
+      All processing happens on-device.<br>Your book never leaves your phone.
     </div>
   </div>
 
-  <div style="margin-top:2rem;font-family:'DM Mono',monospace;font-size:0.65rem;color:#8a7a68;text-align:center;line-height:1.8">
-    All processing happens on-device.<br>Your book never leaves your phone.
+  <!-- URL Panel -->
+  <div id="url-panel">
+    <div class="url-input-wrap">
+      <input type="url" id="url-input" placeholder="https://paulgraham.com/greatwork.html" autocomplete="off" autocorrect="off" spellcheck="false">
+      <button id="url-go-btn">Go</button>
+    </div>
+    <div class="url-hint">
+      Paste any article or webpage URL.<br>
+      Works great with essays, blog posts, and documentation.
+    </div>
+  </div>
+</div>
+
+<!-- Article Picker Modal -->
+<div id="article-modal">
+  <div class="article-modal-backdrop" id="article-modal-backdrop"></div>
+  <div class="article-modal-sheet">
+    <div class="article-modal-handle"></div>
+    <div class="article-modal-title" id="article-modal-title">Choose an article</div>
+    <div class="article-modal-subtitle" id="article-modal-subtitle"></div>
+    <div class="article-list" id="article-list"></div>
+    <button class="article-modal-close" id="close-article-modal-btn">Cancel</button>
   </div>
 </div>
 
@@ -740,7 +998,7 @@
     <div class="voice-modal-handle"></div>
     <div class="voice-modal-title">Voice Settings</div>
     <div class="voice-modal-subtitle">
-      Select a voice below. Greyed out voices aren't installed on your device yet.
+      Select a voice below. Greyed out voices are not installed on your device yet.
     </div>
 
     <div class="voice-group">
@@ -766,10 +1024,9 @@
     <div class="voice-modal-tip">
       <p>
         <strong>Want better voices?</strong> On iPhone go to<br>
-        <strong>Settings → Accessibility → Spoken Content → Voices → English</strong><br>
-        and download <strong>Siri Voice 1</strong> or <strong>Siri Voice 2</strong> — they sound
-        significantly more natural. On the same screen, <strong>Daniel</strong> (UK) and
-        <strong>Karen</strong> (AU) are also excellent downloads.
+        <strong>Settings &rarr; Accessibility &rarr; Spoken Content &rarr; Voices &rarr; English</strong><br>
+        and download <strong>Siri Voice 1</strong> or <strong>Siri Voice 2</strong> for the most natural sound.
+        <strong>Daniel</strong> (UK) and <strong>Karen</strong> (AU) are also excellent.
       </p>
     </div>
 
@@ -779,45 +1036,61 @@
 
 <div class="toast" id="toast"></div>
 
-<!-- JSZip for EPUB -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<!-- PDF.js for PDF -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<!-- CDN libraries with error detection -->
+<script>
+window._cdnErrors = [];
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"
+  onerror="window._cdnErrors.push('JSZip')"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"
+  onerror="window._cdnErrors.push('PDF.js')"></script>
 
 <script>
-pdfjsLib.GlobalWorkerOptions.workerSrc =
-  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
 // =============================================================================
 // TODO: UPGRADE TO OPENAI TTS
-// When you're ready to use OpenAI TTS for higher quality voices:
+// When you are ready to use OpenAI TTS for higher quality voices:
 //
-// 1. Add your API key (or fetch from your own backend to keep it secret)
+// 1. Add your API key (or proxy through your own backend to keep it secret):
 //    const OPENAI_API_KEY = 'sk-...';
 //
-// 2. Replace startSpeech() with this:
+// 2. Replace startSpeech() with this async version:
 //    async function startSpeech() {
 //      const ch = state.chapters[state.currentChapter];
 //      const text = ch.text.slice(state.charOffset);
+//      // Chunk into 4000-char pieces to stay under API limit
+//      const chunk = text.slice(0, 4000);
 //      const res = await fetch('https://api.openai.com/v1/audio/speech', {
 //        method: 'POST',
-//        headers: { 'Authorization': `Bearer ${OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
-//        body: JSON.stringify({ model: 'tts-1', voice: state.openaiVoice, input: text })
+//        headers: {
+//          'Authorization': `Bearer ${OPENAI_API_KEY}`,
+//          'Content-Type': 'application/json'
+//        },
+//        body: JSON.stringify({ model: 'tts-1', voice: state.openaiVoice, input: chunk })
 //      });
 //      const blob = await res.blob();
 //      const audio = new Audio(URL.createObjectURL(blob));
 //      audio.playbackRate = state.speed;
 //      audio.play();
 //      state.audioEl = audio;
-//      audio.onended = () => { ... auto advance chapter ... };
+//      audio.onended = () => { /* advance to next chunk or chapter */ };
 //    }
 //
-// 3. Available voices: alloy, echo, fable, onyx, nova, shimmer
-//    onyx = deep male, nova = warm female, shimmer = expressive female
-//    alloy = neutral, echo = male, fable = storytelling
-//
-// Note: chunk text into ~4000 char pieces to stay under API limits per request.
+// 3. Available voices:
+//    onyx     = deep male (best for non-fiction)
+//    nova     = warm female (best for fiction)
+//    shimmer  = expressive female
+//    alloy    = neutral
+//    echo     = male
+//    fable    = storytelling / narrative
 // =============================================================================
+
+// ---- CDN CHECK ----
+// Warn user if a library failed to load rather than silently breaking
+window.addEventListener('DOMContentLoaded', () => {
+  if (window._cdnErrors && window._cdnErrors.length) {
+    showToast('Network error loading ' + window._cdnErrors.join(', ') + '. Check your connection.');
+  }
+});
 
 // ---- STATE ----
 const state = {
@@ -831,6 +1104,7 @@ const state = {
   charOffset: 0,
   bookId: '',
   fileType: '',
+  userHasInteracted: false, // guard for iOS speech synthesis
 };
 
 const $ = id => document.getElementById(id);
@@ -850,17 +1124,19 @@ const chapterList   = $('chapter-list');
 const chaptersPanel = $('chapters-panel');
 const voiceModal    = $('voice-modal');
 
+// Track user interaction for iOS speech synthesis requirement
+document.addEventListener('touchstart', () => { state.userHasInteracted = true; }, { once: true });
+document.addEventListener('click', () => { state.userHasInteracted = true; }, { once: true });
+
 // ---- VOICE DEFINITIONS ----
-// Curated list of named voices to look for, grouped by region.
-// The browser will match these against whatever is installed on the device.
 const VOICE_GROUPS = {
   us: [
     { label: 'Samantha (US)',  match: /samantha/i },
     { label: 'Alex (US)',      match: /\balex\b/i },
     { label: 'Ava (US)',       match: /\bava\b/i },
-    { label: 'Siri 1 (US)',    match: /siri.*1/i },
-    { label: 'Siri 2 (US)',    match: /siri.*2/i },
-    { label: 'Google US',      match: /google.*us|us.*google/i },
+    { label: 'Siri Voice 1',   match: /siri.*voice.*1|siri.*1/i },
+    { label: 'Siri Voice 2',   match: /siri.*voice.*2|siri.*2/i },
+    { label: 'Google US',      match: /google.*us.*eng|us.*english.*google/i },
     { label: 'Zira (US)',      match: /zira/i },
     { label: 'David (US)',     match: /\bdavid\b/i },
     { label: 'Mark (US)',      match: /\bmark\b/i },
@@ -884,19 +1160,17 @@ const VOICE_GROUPS = {
 };
 
 let allVoices = [];
-let voicesReady = false;
 
-function getInstalledVoices() {
+function getEnglishVoices() {
   return speechSynthesis.getVoices().filter(v => v.lang.startsWith('en'));
 }
 
 function findVoice(matchRegex) {
-  return getInstalledVoices().find(v => matchRegex.test(v.name)) || null;
+  return getEnglishVoices().find(v => matchRegex.test(v.name)) || null;
 }
 
 function bestDefaultVoice() {
-  // Priority order for default voice pick
-  const preferred = [
+  const priority = [
     /siri.*voice.*[12]/i,
     /samantha/i,
     /daniel/i,
@@ -904,49 +1178,47 @@ function bestDefaultVoice() {
     /moira/i,
     /alex/i,
   ];
-  for (const p of preferred) {
+  for (const p of priority) {
     const v = findVoice(p);
     if (v) return v;
   }
-  // Fallback: first English voice
-  return getInstalledVoices()[0] || null;
+  return getEnglishVoices()[0] || speechSynthesis.getVoices()[0] || null;
 }
 
 function buildVoiceModal() {
-  const installed = getInstalledVoices();
+  const installed = getEnglishVoices();
 
   function makeChips(containerId, group) {
     const container = $(containerId);
+    if (!container) return;
     container.innerHTML = '';
-    let hasAny = false;
     for (const def of group) {
       const found = installed.find(v => def.match.test(v.name));
       const chip = document.createElement('button');
       chip.className = 'voice-chip' + (found ? '' : ' unavailable');
       chip.textContent = def.label;
-      chip.title = found ? found.name : 'Not installed on this device';
+      chip.title = found ? found.name : 'Not installed — download in iOS Settings';
       if (found) {
-        chip.addEventListener('click', () => selectVoice(found, chip));
-        hasAny = true;
+        chip.addEventListener('click', () => selectVoice(found));
       }
       container.appendChild(chip);
     }
-    return hasAny;
   }
 
   makeChips('chips-us', VOICE_GROUPS.us);
   makeChips('chips-uk', VOICE_GROUPS.uk);
   makeChips('chips-other', VOICE_GROUPS.other);
 
-  // Show all available voices as fallback group
+  // Show unlisted voices in catch-all group
   const knownPatterns = [
     ...VOICE_GROUPS.us,
     ...VOICE_GROUPS.uk,
     ...VOICE_GROUPS.other,
   ].map(d => d.match);
   const unknown = installed.filter(v => !knownPatterns.some(p => p.test(v.name)));
-  if (unknown.length) {
-    $('group-all-voices').style.display = 'block';
+  const groupEl = $('group-all-voices');
+  if (unknown.length && groupEl) {
+    groupEl.style.display = 'block';
     const allChips = $('chips-all');
     allChips.innerHTML = '';
     unknown.forEach(v => {
@@ -954,7 +1226,7 @@ function buildVoiceModal() {
       chip.className = 'voice-chip';
       chip.textContent = v.name.replace('Google ', '').replace(' English', '');
       chip.title = v.name;
-      chip.addEventListener('click', () => selectVoice(v, chip));
+      chip.addEventListener('click', () => selectVoice(v));
       allChips.appendChild(chip);
     });
   }
@@ -962,7 +1234,7 @@ function buildVoiceModal() {
   updateActiveChip();
 }
 
-function selectVoice(voice, chipEl) {
+function selectVoice(voice) {
   state.voice = voice;
   updateActiveChip();
   updateVoiceLabel();
@@ -972,28 +1244,22 @@ function selectVoice(voice, chipEl) {
 
 function updateActiveChip() {
   document.querySelectorAll('.voice-chip').forEach(c => {
-    c.classList.toggle('active',
-      state.voice && c.title === state.voice.name
-    );
+    c.classList.toggle('active', !!(state.voice && c.title === state.voice.name));
   });
 }
 
 function updateVoiceLabel() {
   const label = $('voice-current-label');
   if (!label) return;
-  if (state.voice) {
-    label.textContent = state.voice.name.replace('Google ', '').replace(' English', '');
-  } else {
-    label.textContent = 'none found';
-  }
+  label.textContent = state.voice
+    ? state.voice.name.replace('Google ', '').replace(' English', '')
+    : 'none found';
 }
 
 function initVoices() {
   allVoices = speechSynthesis.getVoices();
   if (!allVoices.length) return;
-  voicesReady = true;
 
-  // Try to restore saved voice preference
   let defaultVoice = bestDefaultVoice();
   try {
     const saved = localStorage.getItem('inkcast_voice');
@@ -1011,7 +1277,7 @@ function initVoices() {
 speechSynthesis.addEventListener('voiceschanged', initVoices);
 initVoices();
 
-// ---- VOICE MODAL CONTROLS ----
+// ---- VOICE MODAL ----
 $('open-voice-modal-btn').addEventListener('click', () => {
   buildVoiceModal();
   voiceModal.classList.add('open');
@@ -1028,6 +1294,10 @@ function hideLoading() { $('loading').style.display = 'none'; }
 
 // ---- EPUB PARSER ----
 async function parseEpub(file) {
+  if (!window.JSZip) {
+    showToast('JSZip library not loaded. Check your connection and refresh.');
+    return null;
+  }
   showLoading('Parsing epub...');
   try {
     const zip = await JSZip.loadAsync(file);
@@ -1101,6 +1371,10 @@ async function parseEpub(file) {
       } catch(e) {}
     }
     hideLoading();
+    if (!chapters.length) {
+      showToast('Could not extract any text from this epub.');
+      return null;
+    }
     return { title: bookTitle, chapters, type: 'epub' };
   } catch(e) {
     hideLoading();
@@ -1111,6 +1385,10 @@ async function parseEpub(file) {
 
 // ---- PDF PARSER ----
 async function parsePdf(file) {
+  if (!window.pdfjsLib) {
+    showToast('PDF.js library not loaded. Check your connection and refresh.');
+    return null;
+  }
   showLoading('Loading pdf...');
   try {
     const arrayBuffer = await file.arrayBuffer();
@@ -1160,7 +1438,7 @@ async function parsePdf(file) {
       } catch(e) { pageTexts.push(''); }
     }
 
-    const bookTitle = file.name.replace('.pdf','');
+    const bookTitle = file.name.replace(/\.pdf$/i, '');
     let chapters = [];
 
     if (chapterBreaks.length >= 2) {
@@ -1178,14 +1456,16 @@ async function parsePdf(file) {
       for (let i = 0; i < numPages; i += chunkSize) {
         const chunk = pageTexts.slice(i, i + chunkSize).join('\n\n').trim();
         if (chunk.length < 20) continue;
-        const startPage = i + 1;
-        const endPage = Math.min(i + chunkSize, numPages);
-        const title = chunkSize === 1 ? `Page ${startPage}` : `Pages ${startPage}\u2013${endPage}`;
-        chapters.push({ title, text: chunk });
+        const s = i + 1, e = Math.min(i + chunkSize, numPages);
+        chapters.push({ title: chunkSize === 1 ? `Page ${s}` : `Pages ${s}\u2013${e}`, text: chunk });
       }
     }
 
     hideLoading();
+    if (!chapters.length) {
+      showToast('No readable text found. This may be a scanned PDF with no text layer.');
+      return null;
+    }
     return { title: bookTitle, chapters, type: 'pdf' };
   } catch(e) {
     hideLoading();
@@ -1202,17 +1482,21 @@ dropZone.addEventListener('drop', e => {
   e.preventDefault();
   dropZone.classList.remove('drag-over');
   const f = e.dataTransfer.files[0];
-  if (f && (f.name.endsWith('.epub') || f.name.endsWith('.pdf'))) handleFile(f);
-  else showToast('Please drop an .epub or .pdf file');
+  if (f && (f.name.toLowerCase().endsWith('.epub') || f.name.toLowerCase().endsWith('.pdf'))) {
+    handleFile(f);
+  } else {
+    showToast('Please drop an .epub or .pdf file');
+  }
 });
 
 async function handleFile(file) {
   let result;
-  if (file.name.toLowerCase().endsWith('.pdf')) result = await parsePdf(file);
-  else if (file.name.toLowerCase().endsWith('.epub')) result = await parseEpub(file);
-  else { showToast('Unsupported format — use .epub or .pdf'); return; }
+  const name = file.name.toLowerCase();
+  if (name.endsWith('.pdf')) result = await parsePdf(file);
+  else if (name.endsWith('.epub')) result = await parseEpub(file);
+  else { showToast('Unsupported format. Use .epub or .pdf'); return; }
 
-  if (!result || !result.chapters.length) { showToast('No readable content found in this file'); return; }
+  if (!result || !result.chapters.length) return;
 
   state.chapters = result.chapters;
   state.fileType = result.type;
@@ -1230,7 +1514,7 @@ async function handleFile(file) {
 
   if (saved.chapter > 0 || saved.charOffset > 0) {
     const unit = result.type === 'pdf' ? 'section' : 'chapter';
-    showToast(`Resumed at ${unit} ${state.currentChapter + 1}`);
+    showToast('Resumed at ' + unit + ' ' + (state.currentChapter + 1));
   }
 }
 
@@ -1281,15 +1565,16 @@ function loadChapter(idx, charOffset) {
   const ch = state.chapters[idx];
   const total = state.chapters.length;
   const isPdf = state.fileType === 'pdf';
-  const unit = isPdf ? 'Section' : 'Chapter';
+  const isWeb = state.fileType === 'web';
+  const unit = isPdf ? 'Section' : isWeb ? 'Article' : 'Chapter';
 
   chapterTitle.textContent = ch.title;
 
-  const pillClass = isPdf ? 'pill-pdf' : 'pill-epub';
-  const pillLabel = isPdf ? 'PDF' : 'EPUB';
+  const pillClass = isPdf ? 'pill-pdf' : isWeb ? 'pill-web' : 'pill-epub';
+  const pillLabel = isPdf ? 'PDF' : isWeb ? 'WEB' : 'EPUB';
   chapterMeta.innerHTML =
     `<span class="type-pill ${pillClass}">${pillLabel}</span>` +
-    `<span>${unit} ${idx+1} of ${total}&nbsp;&nbsp;·&nbsp;&nbsp;${wordCount(ch.text)} words</span>`;
+    `<span>${unit} ${idx+1} of ${total}&nbsp;&nbsp;&middot;&nbsp;&nbsp;${wordCount(ch.text)} words</span>`;
 
   playerChName.textContent = ch.title;
   renderText(ch.text, -1);
@@ -1321,7 +1606,11 @@ function renderText(text, highlightWordIdx) {
 // ---- SPEECH ----
 // TODO: swap to OpenAI TTS here when ready — see comment block at top of script
 function startSpeech() {
-  if (!('speechSynthesis' in window)) { showToast('Speech not supported in this browser'); return; }
+  if (!('speechSynthesis' in window)) {
+    showToast('Text-to-speech is not supported in this browser. Try Safari.');
+    return;
+  }
+
   speechSynthesis.cancel();
 
   const ch = state.chapters[state.currentChapter];
@@ -1348,29 +1637,37 @@ function startSpeech() {
     updatePosDisplay();
   });
 
+  utter.addEventListener('error', (e) => {
+    // iOS sometimes fires 'interrupted' on first play before user interaction — retry once
+    if (e.error === 'interrupted' && !state.userHasInteracted) {
+      state.userHasInteracted = true;
+      setTimeout(startSpeech, 200);
+    }
+  });
+
   utter.addEventListener('end', () => {
     state.isPlaying = false;
-    $('play-btn').textContent = '▶';
+    $('play-btn').textContent = '\u25B6';
     state.charOffset = 0;
     if (state.currentChapter < state.chapters.length - 1) {
       setTimeout(() => {
         loadChapter(state.currentChapter + 1, 0);
         startSpeech();
         state.isPlaying = true;
-        $('play-btn').textContent = '⏸';
+        $('play-btn').textContent = '\u23F8';
       }, 800);
     }
   });
 
   state.isPlaying = true;
-  $('play-btn').textContent = '⏸';
+  $('play-btn').textContent = '\u23F8';
   speechSynthesis.speak(utter);
 }
 
 function stopSpeech() {
   speechSynthesis.cancel();
   state.isPlaying = false;
-  $('play-btn').textContent = '▶';
+  $('play-btn').textContent = '\u25B6';
 }
 
 function togglePlay() {
@@ -1381,7 +1678,7 @@ function skip(seconds) {
   const ch = state.chapters[state.currentChapter];
   const charsPerSec = (state.speed * 150 * 5) / 60;
   state.charOffset = Math.max(0, Math.min(ch.text.length - 1, state.charOffset + Math.round(seconds * charsPerSec)));
-  if (state.isPlaying) { stopSpeech(); startSpeech(); state.isPlaying = true; $('play-btn').textContent = '⏸'; }
+  if (state.isPlaying) { stopSpeech(); startSpeech(); state.isPlaying = true; $('play-btn').textContent = '\u23F8'; }
   updatePosDisplay();
 }
 
@@ -1401,8 +1698,22 @@ $('speed-btns').addEventListener('click', e => {
   if (!btn) return;
   state.speed = parseFloat(btn.dataset.speed);
   document.querySelectorAll('.speed-btn').forEach(b => b.classList.toggle('active', b === btn));
-  if (state.isPlaying) { stopSpeech(); startSpeech(); state.isPlaying = true; $('play-btn').textContent = '⏸'; }
+  try { localStorage.setItem('inkcast_speed', state.speed); } catch(e) {}
+  if (state.isPlaying) { stopSpeech(); startSpeech(); state.isPlaying = true; $('play-btn').textContent = '\u23F8'; }
 });
+
+// Restore saved speed on load
+(function restoreSpeed() {
+  try {
+    const saved = parseFloat(localStorage.getItem('inkcast_speed'));
+    if (!isNaN(saved) && [0.75,1,1.25,1.5,2].includes(saved)) {
+      state.speed = saved;
+      document.querySelectorAll('.speed-btn').forEach(b => {
+        b.classList.toggle('active', parseFloat(b.dataset.speed) === saved);
+      });
+    }
+  } catch(e) {}
+})();
 
 $('open-chapters-btn').addEventListener('click', () => chaptersPanel.classList.add('open'));
 $('close-chapters-btn').addEventListener('click', closeChapters);
@@ -1418,8 +1729,8 @@ function updateProgress() {
 function updatePosDisplay() {
   const ch = state.chapters[state.currentChapter];
   const pct = ch.text.length > 0 ? Math.round((state.charOffset / ch.text.length) * 100) : 0;
-  const unit = state.fileType === 'pdf' ? 'section' : 'chapter';
-  playerPos.textContent = `${pct}% through ${unit}`;
+  const unit = state.fileType === 'pdf' ? 'section' : state.fileType === 'web' ? 'article' : 'chapter';
+  playerPos.textContent = pct + '% through ' + unit;
 }
 
 // ---- PERSISTENCE ----
@@ -1454,13 +1765,199 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 3500);
 }
 
-// Wake lock — keep screen on while listening
+// Wake lock: keep screen on while listening
 async function requestWakeLock() {
   if ('wakeLock' in navigator) {
     try { await navigator.wakeLock.request('screen'); } catch(e) {}
   }
 }
 $('play-btn').addEventListener('click', () => { if (state.isPlaying) requestWakeLock(); });
+
+// ---- CLOUDFLARE WORKER PROXY ----
+const PROXY_URL = 'https://inkcast-proxy.chizobaobasi77.workers.dev';
+
+// ---- TAB SWITCHING ----
+$('tab-file').addEventListener('click', () => switchTab('file'));
+$('tab-url').addEventListener('click', () => switchTab('url'));
+
+function switchTab(tab) {
+  const isFile = tab === 'file';
+  $('tab-file').classList.toggle('active', isFile);
+  $('tab-url').classList.toggle('active', !isFile);
+  $('file-panel').style.display = isFile ? 'block' : 'none';
+  $('url-panel').classList.toggle('active', !isFile);
+  if (!isFile) $('url-input').focus();
+}
+
+// ---- URL FETCH ----
+$('url-go-btn').addEventListener('click', handleUrlInput);
+$('url-input').addEventListener('keydown', e => { if (e.key === 'Enter') handleUrlInput(); });
+
+async function handleUrlInput() {
+  const raw = $('url-input').value.trim();
+  if (!raw) return;
+
+  let url = raw;
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+
+  $('url-go-btn').disabled = true;
+  $('url-go-btn').textContent = '...';
+  showLoading('Fetching page...');
+
+  try {
+    const res = await fetch(PROXY_URL + '?url=' + encodeURIComponent(url));
+    const data = await res.json();
+
+    if (data.error) {
+      hideLoading();
+      showToast('Could not fetch: ' + data.error);
+      return;
+    }
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(data.html, 'text/html');
+
+    // Detect if this is an index page with many article links
+    const links = extractArticleLinks(doc, data.url);
+
+    hideLoading();
+
+    if (links.length >= 3) {
+      // Show article picker
+      showArticlePicker(doc, data.url, links);
+    } else {
+      // Read the page directly
+      const result = extractPageContent(doc, data.url);
+      if (result) loadWebContent(result);
+    }
+
+  } catch(e) {
+    hideLoading();
+    showToast('Fetch failed. Check your connection.');
+  } finally {
+    $('url-go-btn').disabled = false;
+    $('url-go-btn').textContent = 'Go';
+  }
+}
+
+function extractArticleLinks(doc, baseUrl) {
+  const base = new URL(baseUrl);
+  const seen = new Set();
+  const links = [];
+
+  // Look for anchor tags that are likely article links
+  doc.querySelectorAll('a[href]').forEach(a => {
+    const text = a.textContent.trim();
+    if (text.length < 5 || text.length > 120) return;
+    if (/nav|menu|footer|header|skip|login|sign/i.test(a.closest('[class],[id]')?.className || '')) return;
+
+    try {
+      const href = new URL(a.getAttribute('href'), baseUrl).toString();
+      if (!href.startsWith(base.origin)) return; // only same-domain links
+      if (seen.has(href)) return;
+      seen.add(href);
+
+      // Skip if it looks like a nav/utility link
+      const path = new URL(href).pathname;
+      if (path === '/' || path === base.pathname) return;
+      if (/\.(css|js|png|jpg|gif|ico|xml|json)$/i.test(path)) return;
+
+      links.push({ text, href });
+    } catch(e) {}
+  });
+
+  return links.slice(0, 60); // cap at 60 articles
+}
+
+function showArticlePicker(doc, baseUrl, links) {
+  const hostname = new URL(baseUrl).hostname.replace('www.', '');
+  $('article-modal-title').textContent = hostname;
+  $('article-modal-subtitle').textContent = links.length + ' articles found — tap one to listen';
+
+  const list = $('article-list');
+  list.innerHTML = '';
+  links.forEach(({ text, href }) => {
+    const btn = document.createElement('button');
+    btn.className = 'article-item';
+    btn.textContent = text;
+    btn.addEventListener('click', async () => {
+      closeArticleModal();
+      await fetchAndPlayUrl(href);
+    });
+    list.appendChild(btn);
+  });
+
+  $('article-modal').classList.add('open');
+}
+
+$('close-article-modal-btn').addEventListener('click', closeArticleModal);
+$('article-modal-backdrop').addEventListener('click', closeArticleModal);
+function closeArticleModal() { $('article-modal').classList.remove('open'); }
+
+async function fetchAndPlayUrl(url) {
+  $('url-go-btn').disabled = true;
+  showLoading('Fetching article...');
+  try {
+    const res = await fetch(PROXY_URL + '?url=' + encodeURIComponent(url));
+    const data = await res.json();
+    if (data.error) { showToast('Could not fetch: ' + data.error); return; }
+    const doc = new DOMParser().parseFromString(data.html, 'text/html');
+    const result = extractPageContent(doc, url);
+    if (result) loadWebContent(result);
+  } catch(e) {
+    showToast('Fetch failed. Check your connection.');
+  } finally {
+    hideLoading();
+    $('url-go-btn').disabled = false;
+  }
+}
+
+function extractPageContent(doc, url) {
+  // Remove noise
+  doc.querySelectorAll('script,style,nav,header,footer,aside,[role="navigation"],[role="banner"],[role="complementary"],noscript,iframe,.nav,.menu,.sidebar,.ad,.advertisement').forEach(el => el.remove());
+
+  // Try to find main content
+  const mainSelectors = ['article', 'main', '[role="main"]', '.post-content', '.article-content', '.entry-content', '.content', '#content', '#main'];
+  let container = null;
+  for (const sel of mainSelectors) {
+    const el = doc.querySelector(sel);
+    if (el && el.textContent.trim().length > 200) { container = el; break; }
+  }
+  if (!container) container = doc.body;
+
+  let text = container.innerText || container.textContent || '';
+  text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+
+  if (text.length < 100) return null;
+
+  // Page title
+  const titleEl = doc.querySelector('h1') || doc.querySelector('title');
+  const title = titleEl ? titleEl.textContent.trim() : new URL(url).hostname;
+
+  return {
+    title,
+    url,
+    text,
+    type: 'web',
+  };
+}
+
+function loadWebContent(result) {
+  // Treat the whole page as one "chapter"
+  state.chapters = [{ title: result.title, text: result.text }];
+  state.fileType = 'web';
+  state.bookId = 'web_' + result.url;
+  bookTitleTop.textContent = result.title;
+  $('panel-heading').textContent = 'Article';
+
+  state.currentChapter = 0;
+  state.charOffset = 0;
+
+  buildChapterList();
+  showPlayer();
+  loadChapter(0, 0);
+}
+
 </script>
 </body>
 </html>
