@@ -756,110 +756,6 @@
     line-height: 1.7;
     text-align: center;
   }
-
-  /* ---- ARTICLE PICKER MODAL ---- */
-  #article-modal {
-    position: fixed;
-    inset: 0;
-    z-index: 400;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    pointer-events: none;
-  }
-
-  #article-modal.open { pointer-events: all; }
-
-  .article-modal-backdrop {
-    position: absolute;
-    inset: 0;
-    background: rgba(26,18,8,0.55);
-    opacity: 0;
-    transition: opacity 0.25s;
-  }
-
-  #article-modal.open .article-modal-backdrop { opacity: 1; }
-
-  .article-modal-sheet {
-    position: relative;
-    background: var(--paper);
-    width: 100%;
-    max-width: 520px;
-    border-radius: 12px 12px 0 0;
-    border-top: 2px solid var(--amber);
-    padding: 1rem 0 2rem;
-    transform: translateY(100%);
-    transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
-    max-height: 80dvh;
-    display: flex;
-    flex-direction: column;
-  }
-
-  #article-modal.open .article-modal-sheet { transform: translateY(0); }
-
-  .article-modal-handle {
-    width: 36px;
-    height: 3px;
-    background: var(--cream);
-    border-radius: 2px;
-    margin: 0 auto 1rem;
-  }
-
-  .article-modal-title {
-    font-family: var(--serif);
-    font-size: 1.1rem;
-    font-style: italic;
-    padding: 0 1.5rem;
-    margin-bottom: 0.25rem;
-  }
-
-  .article-modal-subtitle {
-    font-family: var(--mono);
-    font-size: 0.6rem;
-    color: var(--muted);
-    padding: 0 1.5rem;
-    margin-bottom: 0.75rem;
-    letter-spacing: 0.06em;
-  }
-
-  .article-list {
-    overflow-y: auto;
-    flex: 1;
-    padding: 0 0.75rem;
-  }
-
-  .article-item {
-    display: block;
-    width: 100%;
-    text-align: left;
-    background: none;
-    border: none;
-    border-bottom: 1px solid var(--cream);
-    font-family: var(--serif);
-    font-size: 0.9rem;
-    color: var(--ink);
-    padding: 0.75rem 0.75rem;
-    cursor: pointer;
-    transition: background 0.12s;
-    border-radius: 2px;
-  }
-
-  .article-item:hover { background: var(--amber-dim); color: var(--amber); }
-  .article-item:last-child { border-bottom: none; }
-
-  .article-modal-close {
-    margin: 0.75rem 1.5rem 0;
-    background: var(--ink);
-    color: var(--paper);
-    border: none;
-    font-family: var(--mono);
-    font-size: 0.7rem;
-    letter-spacing: 0.1em;
-    padding: 0.8rem;
-    border-radius: 4px;
-    cursor: pointer;
-    flex-shrink: 0;
-  }
   @media (min-width: 600px) {
     .brand { font-size: 5rem; }
     .content-area { padding: 2rem 2rem 12rem; }
@@ -916,17 +812,6 @@
   </div>
 </div>
 
-<!-- Article Picker Modal -->
-<div id="article-modal">
-  <div class="article-modal-backdrop" id="article-modal-backdrop"></div>
-  <div class="article-modal-sheet">
-    <div class="article-modal-handle"></div>
-    <div class="article-modal-title" id="article-modal-title">Choose an article</div>
-    <div class="article-modal-subtitle" id="article-modal-subtitle"></div>
-    <div class="article-list" id="article-list"></div>
-    <button class="article-modal-close" id="close-article-modal-btn">Cancel</button>
-  </div>
-</div>
 
 <!-- Player Screen -->
 <div id="player-screen">
@@ -1547,7 +1432,7 @@ function buildChapterList() {
     el.addEventListener('click', () => {
       closeChapters();
       stopSpeech();
-      loadChapter(parseInt(el.dataset.idx), 0);
+      loadChapterMaybeWeb(parseInt(el.dataset.idx), 0);
     });
   });
 }
@@ -1651,8 +1536,8 @@ function startSpeech() {
     state.charOffset = 0;
     if (state.currentChapter < state.chapters.length - 1) {
       setTimeout(() => {
-        loadChapter(state.currentChapter + 1, 0);
-        startSpeech();
+        loadChapterMaybeWeb(state.currentChapter + 1, 0).then(() => startSpeech());
+        return;
         state.isPlaying = true;
         $('play-btn').textContent = '\u23F8';
       }, 800);
@@ -1687,10 +1572,10 @@ $('play-btn').addEventListener('click', togglePlay);
 $('rewind-btn').addEventListener('click', () => skip(-15));
 $('forward-btn').addEventListener('click', () => skip(30));
 $('prev-chapter-btn').addEventListener('click', () => {
-  if (state.currentChapter > 0) { stopSpeech(); loadChapter(state.currentChapter - 1, 0); }
+  if (state.currentChapter > 0) { stopSpeech(); loadChapterMaybeWeb(state.currentChapter - 1, 0); }
 });
 $('next-chapter-btn').addEventListener('click', () => {
-  if (state.currentChapter < state.chapters.length - 1) { stopSpeech(); loadChapter(state.currentChapter + 1, 0); }
+  if (state.currentChapter < state.chapters.length - 1) { stopSpeech(); loadChapterMaybeWeb(state.currentChapter + 1, 0); }
 });
 
 $('speed-btns').addEventListener('click', e => {
@@ -1786,7 +1671,7 @@ function switchTab(tab) {
   $('tab-url').classList.toggle('active', !isFile);
   $('file-panel').style.display = isFile ? 'block' : 'none';
   $('url-panel').classList.toggle('active', !isFile);
-  if (!isFile) $('url-input').focus();
+  if (!isFile) setTimeout(() => $('url-input').focus(), 50);
 }
 
 // ---- URL FETCH ----
@@ -1807,28 +1692,21 @@ async function handleUrlInput() {
   try {
     const res = await fetch(PROXY_URL + '?url=' + encodeURIComponent(url));
     const data = await res.json();
-
-    if (data.error) {
-      hideLoading();
-      showToast('Could not fetch: ' + data.error);
-      return;
-    }
-
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(data.html, 'text/html');
-
-    // Detect if this is an index page with many article links
-    const links = extractArticleLinks(doc, data.url);
-
     hideLoading();
 
+    if (data.error) { showToast('Could not fetch: ' + data.error); return; }
+
+    const doc = new DOMParser().parseFromString(data.html, 'text/html');
+    const links = extractArticleLinks(doc, data.url);
+
     if (links.length >= 3) {
-      // Show article picker
-      showArticlePicker(doc, data.url, links);
+      // Index page — load all articles as lazy chapters in the TOC
+      loadArticleIndex(doc, data.url, links);
     } else {
-      // Read the page directly
+      // Single article — extract and play directly
       const result = extractPageContent(doc, data.url);
-      if (result) loadWebContent(result);
+      if (result) loadWebArticles([result]);
+      else showToast('Could not extract readable text from this page.');
     }
 
   } catch(e) {
@@ -1840,83 +1718,130 @@ async function handleUrlInput() {
   }
 }
 
+// ---- ARTICLE LINK EXTRACTION ----
 function extractArticleLinks(doc, baseUrl) {
   const base = new URL(baseUrl);
   const seen = new Set();
   const links = [];
 
-  // Look for anchor tags that are likely article links
   doc.querySelectorAll('a[href]').forEach(a => {
     const text = a.textContent.trim();
     if (text.length < 5 || text.length > 120) return;
-    if (/nav|menu|footer|header|skip|login|sign/i.test(a.closest('[class],[id]')?.className || '')) return;
+
+    // Skip nav/utility containers
+    const parent = a.closest('nav, header, footer, [role="navigation"], [role="banner"]');
+    if (parent) return;
 
     try {
       const href = new URL(a.getAttribute('href'), baseUrl).toString();
-      if (!href.startsWith(base.origin)) return; // only same-domain links
+      if (!href.startsWith(base.origin)) return;
       if (seen.has(href)) return;
       seen.add(href);
 
-      // Skip if it looks like a nav/utility link
       const path = new URL(href).pathname;
       if (path === '/' || path === base.pathname) return;
-      if (/\.(css|js|png|jpg|gif|ico|xml|json)$/i.test(path)) return;
+      if (/\.(css|js|png|jpg|gif|ico|xml|json|pdf)$/i.test(path)) return;
 
       links.push({ text, href });
     } catch(e) {}
   });
 
-  return links.slice(0, 60); // cap at 60 articles
+  return links.slice(0, 80);
 }
 
-function showArticlePicker(doc, baseUrl, links) {
+// ---- INDEX PAGE — load as lazy TOC ----
+function loadArticleIndex(doc, baseUrl, links) {
   const hostname = new URL(baseUrl).hostname.replace('www.', '');
-  $('article-modal-title').textContent = hostname;
-  $('article-modal-subtitle').textContent = links.length + ' articles found — tap one to listen';
 
-  const list = $('article-list');
-  list.innerHTML = '';
-  links.forEach(({ text, href }) => {
-    const btn = document.createElement('button');
-    btn.className = 'article-item';
-    btn.textContent = text;
-    btn.addEventListener('click', async () => {
-      closeArticleModal();
-      await fetchAndPlayUrl(href);
-    });
-    list.appendChild(btn);
-  });
+  // Build lazy chapters — text is null until fetched
+  state.chapters = links.map(({ text, href }) => ({
+    title: text,
+    text: null,   // lazy — fetched on demand
+    href,
+    loaded: false,
+  }));
 
-  $('article-modal').classList.add('open');
+  state.fileType = 'web';
+  state.bookId = 'web_' + baseUrl;
+  state.currentChapter = 0;
+  state.charOffset = 0;
+
+  bookTitleTop.textContent = hostname;
+  $('panel-heading').textContent = 'Articles';
+
+  buildChapterList();
+  showPlayer();
+
+  // Show TOC immediately, prompt user to pick
+  chaptersPanel.classList.add('open');
+  chapterTitle.textContent = hostname;
+  chapterMeta.innerHTML = '<span class="type-pill pill-web">WEB</span>' +
+    '<span>' + links.length + ' articles — tap one to listen</span>';
+  textDisplay.innerHTML = '<span style="color:var(--muted);font-family:var(--mono);font-size:0.8rem">' +
+    'Open the contents panel and tap an article to start listening.</span>';
+  playerChName.textContent = 'Select an article';
+  $('player-pos').textContent = '';
+  updateProgress();
 }
 
-$('close-article-modal-btn').addEventListener('click', closeArticleModal);
-$('article-modal-backdrop').addEventListener('click', closeArticleModal);
-function closeArticleModal() { $('article-modal').classList.remove('open'); }
+// ---- LOAD CHAPTER (override for lazy web chapters) ----
+// Wrap the existing loadChapter to handle lazy fetching
+const _origLoadChapter = loadChapter;
+async function loadChapterMaybeWeb(idx, charOffset) {
+  const ch = state.chapters[idx];
 
-async function fetchAndPlayUrl(url) {
-  $('url-go-btn').disabled = true;
-  showLoading('Fetching article...');
-  try {
-    const res = await fetch(PROXY_URL + '?url=' + encodeURIComponent(url));
-    const data = await res.json();
-    if (data.error) { showToast('Could not fetch: ' + data.error); return; }
-    const doc = new DOMParser().parseFromString(data.html, 'text/html');
-    const result = extractPageContent(doc, url);
-    if (result) loadWebContent(result);
-  } catch(e) {
-    showToast('Fetch failed. Check your connection.');
-  } finally {
+  if (state.fileType === 'web' && ch && !ch.loaded && ch.href) {
+    // Lazy fetch
+    stopSpeech();
+    showLoading('Loading article...');
+    try {
+      const res = await fetch(PROXY_URL + '?url=' + encodeURIComponent(ch.href));
+      const data = await res.json();
+      if (data.error) { hideLoading(); showToast('Could not load: ' + data.error); return; }
+      const doc = new DOMParser().parseFromString(data.html, 'text/html');
+      const result = extractPageContent(doc, ch.href);
+      if (!result) { hideLoading(); showToast('No readable text found in this article.'); return; }
+      ch.text = result.text;
+      ch.title = result.title || ch.title;
+      ch.loaded = true;
+    } catch(e) {
+      hideLoading();
+      showToast('Fetch failed. Check your connection.');
+      return;
+    }
     hideLoading();
-    $('url-go-btn').disabled = false;
+    // Rebuild chapter list so title updates if it changed
+    buildChapterList();
   }
+
+  _origLoadChapter(idx, charOffset);
 }
 
+// ---- SINGLE ARTICLE ----
+function loadWebArticles(results) {
+  state.chapters = results.map(r => ({
+    title: r.title,
+    text: r.text,
+    href: r.url,
+    loaded: true,
+  }));
+  state.fileType = 'web';
+  state.bookId = 'web_' + results[0].url;
+  state.currentChapter = 0;
+  state.charOffset = 0;
+
+  bookTitleTop.textContent = results[0].title;
+  $('panel-heading').textContent = 'Article';
+
+  buildChapterList();
+  showPlayer();
+  loadChapter(0, 0);
+}
+
+// ---- CONTENT EXTRACTION ----
 function extractPageContent(doc, url) {
-  // Remove noise
   doc.querySelectorAll('script,style,nav,header,footer,aside,[role="navigation"],[role="banner"],[role="complementary"],noscript,iframe,.nav,.menu,.sidebar,.ad,.advertisement').forEach(el => el.remove());
 
-  // Try to find main content
   const mainSelectors = ['article', 'main', '[role="main"]', '.post-content', '.article-content', '.entry-content', '.content', '#content', '#main'];
   let container = null;
   for (const sel of mainSelectors) {
@@ -1926,36 +1851,20 @@ function extractPageContent(doc, url) {
   if (!container) container = doc.body;
 
   let text = container.innerText || container.textContent || '';
-  text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+  text = text.replace(/
+/g, '
+').replace(/
+/g, '
+').replace(/
+{3,}/g, '
 
+').trim();
   if (text.length < 100) return null;
 
-  // Page title
   const titleEl = doc.querySelector('h1') || doc.querySelector('title');
   const title = titleEl ? titleEl.textContent.trim() : new URL(url).hostname;
 
-  return {
-    title,
-    url,
-    text,
-    type: 'web',
-  };
-}
-
-function loadWebContent(result) {
-  // Treat the whole page as one "chapter"
-  state.chapters = [{ title: result.title, text: result.text }];
-  state.fileType = 'web';
-  state.bookId = 'web_' + result.url;
-  bookTitleTop.textContent = result.title;
-  $('panel-heading').textContent = 'Article';
-
-  state.currentChapter = 0;
-  state.charOffset = 0;
-
-  buildChapterList();
-  showPlayer();
-  loadChapter(0, 0);
+  return { title, url, text, type: 'web' };
 }
 
 </script>
