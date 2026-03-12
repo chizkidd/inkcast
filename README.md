@@ -7,10 +7,12 @@ A lightweight, privacy-first audiobook player that runs entirely in your browser
 ## Features
 
 - **Drop any `.epub` or `.pdf`** and start listening immediately
+  - EPUB footnotes and endnotes are automatically stripped so they don't interrupt the reading
 - **Paste any URL**: listen to articles, essays, and blog posts from any webpage
   - Index pages (e.g. `paulgraham.com/articles.html`) load all articles into the sidebar so you can tap any one to play
   - Strips ads, navigation, and clutter automatically
 - **Chapter / page navigation** with a slide-out sidebar
+- **Estimated listen time** shown per chapter alongside word count
 - **Speed control**: 0.75× to 2× (remembered across sessions)
 - **Resume where you left off**: per book, stored locally
 - **Smart voice selector**: organized by region (US, UK, AU). Greys out voices not installed on your device. Remembers your choice.
