@@ -1,23 +1,22 @@
 # Inkcast 🎙️
 
-A lightweight, privacy-first epub and PDF audiobook player that runs entirely in your browser — no server, no account, no uploads. Built for iPhone but works anywhere.
+A lightweight, privacy-first audiobook player that runs entirely in your browser: no account, no uploads. Supports epub, PDF, and any article URL on the web. Built for iPhone but works anywhere.
 
 ---
 
 ## Features
 
 - **Drop any `.epub` or `.pdf`** and start listening immediately
+- **Paste any URL**: listen to articles, essays, and blog posts from any webpage
+  - Index pages (e.g. `paulgraham.com/articles.html`) load all articles into the sidebar so you can tap any one to play
+  - Strips ads, navigation, and clutter automatically
 - **Chapter / page navigation** with a slide-out sidebar
-  - EPUBs use the table of contents for chapter titles
-  - PDFs use bookmarks/outline when available, or smart page grouping as fallback
-- **Speed control** — 0.75× to 2× (remembered across sessions)
-- **Resume where you left off** — per book, stored locally
-- **Smart voice selector** — organized by region (US, UK, AU) with named voices like Samantha, Daniel, Karen, Siri Voice 1/2. Greys out voices not installed on your device. Remembers your choice.
-- **Voice quality guide** — built-in tip showing exactly where to download better voices on iOS
-- **OpenAI TTS ready** — a drop-in code hook is already in the source for when you want to upgrade to podcast-quality voices
-- **iOS Home Screen app** — add to Home Screen for an app-like experience
-- **iOS Shortcut** — open Inkcast directly from your home screen or via Siri
-- 100% on-device. Your books never leave your phone.
+- **Speed control**: 0.75× to 2× (remembered across sessions)
+- **Resume where you left off**: per book, stored locally
+- **Smart voice selector**: organized by region (US, UK, AU). Greys out voices not installed on your device. Remembers your choice.
+- **iOS Home Screen app**: add to Home Screen for an app-like experience
+- **iOS Shortcut**: open Inkcast directly from your home screen or via Siri
+- Your books and files never leave your device.
 
 ---
 
@@ -62,9 +61,9 @@ The default system voices can sound robotic. On iPhone:
 **Settings → Accessibility → Spoken Content → Voices → English**
 
 Recommended downloads:
-- **Siri Voice 1 or 2** — most natural, best for long-form listening
-- **Daniel** (UK Male) — excellent for fiction
-- **Karen** (AU Female) — clear and warm
+- **Siri Voice 1 or 2**: most natural, best for long-form listening
+- **Daniel** (UK Male): excellent for fiction
+- **Karen** (AU Female): clear and warm
 
 Downloaded voices appear automatically in Inkcast's voice selector.
 
@@ -80,13 +79,14 @@ Available voices: `onyx` (deep male), `nova` (warm female), `shimmer` (expressiv
 
 ## How it works
 
-- **EPUB parsing** — JSZip unpacks the file in-browser. Chapter titles come from the NCX (EPUB2) or `nav.xhtml` (EPUB3).
-- **PDF parsing** — PDF.js extracts text page by page. Bookmark outlines become chapter sections; otherwise pages are grouped automatically.
-- **Text-to-speech** — Web Speech API (`SpeechSynthesisUtterance`), built into Safari, Chrome, Firefox, and Edge. No external API needed.
-- **Voice selection** — matches installed voices against a curated list by region. Preference saved in `localStorage`.
-- **Resume & speed** — stored in `localStorage` keyed by filename + filesize per book. Speed persists globally.
+- **EPUB parsing**: JSZip unpacks the file in-browser. Chapter titles come from the NCX (EPUB2) or `nav.xhtml` (EPUB3).
+- **PDF parsing**: PDF.js extracts text page by page. Bookmark outlines become chapters; otherwise pages are grouped automatically.
+- **URL fetching**: a Cloudflare Worker fetches pages server-side to bypass CORS. The HTML is cleaned in the browser. Index pages populate the sidebar TOC automatically; articles load on demand when tapped.
+- **Text-to-speech**: Web Speech API, built into Safari, Chrome, Firefox, and Edge. No external API needed.
+- **Voice selection**: matches installed voices against a curated list by region. Preference saved in `localStorage`.
+- **Resume & speed**: stored in `localStorage` per book. Speed persists globally.
 
-> Scanned PDFs (image-only, no text layer) won't have readable text. Most ebooks and modern PDFs work fine.
+> Scanned PDFs (image-only, no text layer) won't work. Most ebooks and modern PDFs are fine.
 
 ---
 
@@ -95,11 +95,11 @@ Available voices: `onyx` (deep male), `nova` (warm female), `shimmer` (expressiv
 ```
 inkcast/
 ├── docs/
-│   ├── index.html          # The entire app (self-contained)
-│   ├── shortcut-setup.md   # Detailed iOS shortcut instructions
-│   ├── robots.txt          # SEO — tells Google to index the site
-│   ├── sitemap.xml         # SEO — canonical URL for Google
-│   └── 404.html            # Custom not-found page with auto-redirect
+│   ├── index.html          # The entire app
+│   ├── shortcut-setup.md   # iOS shortcut instructions
+│   ├── robots.txt
+│   ├── sitemap.xml
+│   └── 404.html
 ├── .github/
 │   └── FUNDING.yml
 ├── .gitignore
@@ -140,4 +140,4 @@ PRs welcome. Open an issue first for big changes.
 
 ## License
 
-MIT — do whatever you want with it.
+MIT
