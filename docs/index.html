@@ -1412,6 +1412,7 @@ function showPlayer() {
 
 function showUpload() {
   stopSpeech();
+  chaptersPanel.classList.remove('open');
   playerScreen.style.display = 'none';
   playerBar.style.display = 'none';
   uploadScreen.style.display = 'flex';
@@ -1516,17 +1517,32 @@ function startSpeech() {
 
   const wordsBeforeOffset = ch.text.slice(0, state.charOffset).split(/\s+/).filter(Boolean).length;
 
+  let lastSave = 0;
+  let lastScroll = 0;
+
   utter.addEventListener('boundary', (e) => {
     if (e.name !== 'word') return;
     state.wordIndex++;
     const idx = wordsBeforeOffset + state.wordIndex - 1;
     highlightWord(idx);
-    const sw = document.getElementById('sw');
-    if (sw) sw.scrollIntoView({ block: 'center', behavior: 'smooth' });
+
+    // Throttle scroll to once every 2s to avoid jank
+    const now = Date.now();
+    if (now - lastScroll > 2000) {
+      lastScroll = now;
+      const sw = document.getElementById('sw');
+      if (sw) sw.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+
     state.charOffset = Math.min(ch.text.length - 1, (state.charOffset || 0) + (e.charIndex || 0));
-    saveProgress();
     updateProgress();
     updatePosDisplay();
+
+    // Debounce saveProgress to once every 5s
+    if (now - lastSave > 5000) {
+      lastSave = now;
+      saveProgress();
+    }
   });
 
   utter.addEventListener('error', (e) => {
@@ -1543,11 +1559,13 @@ function startSpeech() {
     state.charOffset = 0;
     if (state.currentChapter < state.chapters.length - 1) {
       setTimeout(() => {
-        loadChapterMaybeWeb(state.currentChapter + 1, 0).then(() => {
-          state.isPlaying = true;
-          $('play-btn').textContent = '\u23F8';
-          startSpeech();
-        });
+        loadChapterMaybeWeb(state.currentChapter + 1, 0)
+          .then(() => {
+            state.isPlaying = true;
+            $('play-btn').textContent = '\u23F8';
+            startSpeech();
+          })
+          .catch(() => showToast('Could not load next chapter.'));
       }, 800);
     }
   });
@@ -1615,7 +1633,16 @@ function closeChapters() { chaptersPanel.classList.remove('open'); }
 
 // ---- PROGRESS ----
 function updateProgress() {
-  const pct = state.chapters.length > 1 ? (state.currentChapter / (state.chapters.length - 1)) * 100 : 0;
+  // Use total character count across all loaded chapters for accurate progress
+  let totalChars = 0;
+  let charsRead = 0;
+  state.chapters.forEach((ch, i) => {
+    const len = (ch.text || '').length;
+    totalChars += len;
+    if (i < state.currentChapter) charsRead += len;
+    else if (i === state.currentChapter) charsRead += state.charOffset;
+  });
+  const pct = totalChars > 0 ? (charsRead / totalChars) * 100 : 0;
   progressFill.style.width = pct + '%';
 }
 
