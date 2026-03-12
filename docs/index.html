@@ -802,7 +802,7 @@
   <!-- URL Panel -->
   <div id="url-panel">
     <div class="url-input-wrap">
-      <input type="url" id="url-input" placeholder="https://paulgraham.com/greatwork.html" autocomplete="off" autocorrect="off" spellcheck="false">
+      <input type="url" id="url-input" placeholder="https://paulgraham.com/articles.html" autocomplete="off" autocorrect="off" spellcheck="false">
       <button id="url-go-btn">Go</button>
     </div>
     <div class="url-hint">
@@ -1242,6 +1242,16 @@ async function parseEpub(file) {
         const html = await fileObj.async('string');
         const doc = parser.parseFromString(html, 'text/html');
         doc.querySelectorAll('script,style,nav,[role="doc-toc"]').forEach(el => el.remove());
+        // Strip footnotes and endnotes
+        doc.querySelectorAll(
+          'aside[epub\\:type="footnote"], aside[epub\\:type="endnote"], ' +
+          '[role="doc-footnote"], [role="doc-endnote"], ' +
+          '.footnote, .endnote, .footnotes, .endnotes'
+        ).forEach(el => el.remove());
+        // Strip inline note reference markers (superscript links back to notes)
+        doc.querySelectorAll(
+          'a[epub\\:type="noteref"], a[role="doc-noteref"]'
+        ).forEach(el => el.remove());
         let text = (doc.body || doc.documentElement).innerText
           || (doc.body || doc.documentElement).textContent || '';
         text = text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').replace(/\n{3,}/g,'\n\n').trim();
@@ -1460,7 +1470,7 @@ function loadChapter(idx, charOffset) {
   const pillLabel = isPdf ? 'PDF' : isWeb ? 'WEB' : 'EPUB';
   chapterMeta.innerHTML =
     `<span class="type-pill ${pillClass}">${pillLabel}</span>` +
-    `<span>${unit} ${idx+1} of ${total}&nbsp;&nbsp;&middot;&nbsp;&nbsp;${wordCount(ch.text)} words</span>`;
+    `<span>${unit} ${idx+1} of ${total}&nbsp;&nbsp;&middot;&nbsp;&nbsp;${wordCount(ch.text)} words&nbsp;&nbsp;&middot;&nbsp;&nbsp;~${listenTime(ch.text, state.speed)} min</span>`;
 
   playerChName.textContent = ch.title;
   renderText(ch.text, -1);
@@ -1471,6 +1481,10 @@ function loadChapter(idx, charOffset) {
 }
 
 function wordCount(t) { return t.trim().split(/\s+/).length.toLocaleString(); }
+function listenTime(t, speed) {
+  const words = t.trim().split(/\s+/).length;
+  return Math.max(1, Math.ceil(words / ((speed || 1) * 150)));
+}
 
 function renderText(text, highlightWordIdx) {
   state.words = text.split(/(\s+)/);
@@ -1557,6 +1571,7 @@ function startSpeech() {
     state.isPlaying = false;
     $('play-btn').textContent = '\u25B6';
     state.charOffset = 0;
+    saveProgress();
     if (state.currentChapter < state.chapters.length - 1) {
       setTimeout(() => {
         loadChapterMaybeWeb(state.currentChapter + 1, 0)
@@ -1632,12 +1647,12 @@ $('panel-backdrop').addEventListener('click', closeChapters);
 function closeChapters() { chaptersPanel.classList.remove('open'); }
 
 // ---- PROGRESS ----
+const AVG_ARTICLE_CHARS = 5000; // estimate for unloaded lazy web chapters
 function updateProgress() {
-  // Use total character count across all loaded chapters for accurate progress
   let totalChars = 0;
   let charsRead = 0;
   state.chapters.forEach((ch, i) => {
-    const len = (ch.text || '').length;
+    const len = ch.text ? ch.text.length : AVG_ARTICLE_CHARS;
     totalChars += len;
     if (i < state.currentChapter) charsRead += len;
     else if (i === state.currentChapter) charsRead += state.charOffset;
@@ -1845,27 +1860,44 @@ async function loadChapterMaybeWeb(idx, charOffset) {
   const ch = state.chapters[idx];
 
   if (state.fileType === 'web' && ch && !ch.loaded && ch.href) {
-    // Lazy fetch
-    stopSpeech();
-    showLoading('Loading article...');
+    // Check sessionStorage cache first
+    let cached = null;
     try {
-      const res = await fetch(PROXY_URL + '?url=' + encodeURIComponent(ch.href));
-      const data = await res.json();
-      if (data.error) { hideLoading(); showToast('Could not load: ' + data.error); return; }
-      const doc = new DOMParser().parseFromString(data.html, 'text/html');
-      const result = extractPageContent(doc, ch.href);
-      if (!result) { hideLoading(); showToast('No readable text found in this article.'); return; }
-      ch.text = result.text;
-      ch.title = result.title || ch.title;
+      const raw = sessionStorage.getItem('inkcast_art_' + ch.href);
+      if (raw) cached = JSON.parse(raw);
+    } catch(e) {}
+
+    if (cached) {
+      ch.text = cached.text;
+      ch.title = cached.title || ch.title;
       ch.loaded = true;
-    } catch(e) {
+      buildChapterList();
+    } else {
+      // Lazy fetch via Worker
+      stopSpeech();
+      showLoading('Loading article...');
+      try {
+        const res = await fetch(PROXY_URL + '?url=' + encodeURIComponent(ch.href));
+        const data = await res.json();
+        if (data.error) { hideLoading(); showToast('Could not load: ' + data.error); return; }
+        const doc = new DOMParser().parseFromString(data.html, 'text/html');
+        const result = extractPageContent(doc, ch.href);
+        if (!result) { hideLoading(); showToast('No readable text found in this article.'); return; }
+        ch.text = result.text;
+        ch.title = result.title || ch.title;
+        ch.loaded = true;
+        // Cache in sessionStorage for this session
+        try {
+          sessionStorage.setItem('inkcast_art_' + ch.href, JSON.stringify({ text: ch.text, title: ch.title }));
+        } catch(e) {}
+      } catch(e) {
+        hideLoading();
+        showToast('Fetch failed. Check your connection.');
+        return;
+      }
       hideLoading();
-      showToast('Fetch failed. Check your connection.');
-      return;
+      buildChapterList();
     }
-    hideLoading();
-    // Rebuild chapter list so title updates if it changed
-    buildChapterList();
   }
 
   _origLoadChapter(idx, charOffset);
