@@ -1479,13 +1479,19 @@ function renderText(text, highlightWordIdx) {
     if (/\s+/.test(chunk)) {
       html += escHtml(chunk);
     } else {
-      html += wordI === highlightWordIdx
-        ? `<mark class="spoken-word" id="sw">${escHtml(chunk)}</mark>`
-        : escHtml(chunk);
+      html += `<span class="w" data-w="${wordI}">${escHtml(chunk)}</span>`;
       wordI++;
     }
   }
   textDisplay.innerHTML = html;
+  if (highlightWordIdx >= 0) highlightWord(highlightWordIdx);
+}
+
+function highlightWord(idx) {
+  const prev = textDisplay.querySelector('.spoken-word');
+  if (prev) { prev.classList.remove('spoken-word'); prev.removeAttribute('id'); }
+  const next = textDisplay.querySelector(`[data-w="${idx}"]`);
+  if (next) { next.classList.add('spoken-word'); next.id = 'sw'; }
 }
 
 // ---- SPEECH ----
@@ -1513,7 +1519,8 @@ function startSpeech() {
   utter.addEventListener('boundary', (e) => {
     if (e.name !== 'word') return;
     state.wordIndex++;
-    renderText(ch.text, wordsBeforeOffset + state.wordIndex - 1);
+    const idx = wordsBeforeOffset + state.wordIndex - 1;
+    highlightWord(idx);
     const sw = document.getElementById('sw');
     if (sw) sw.scrollIntoView({ block: 'center', behavior: 'smooth' });
     state.charOffset = Math.min(ch.text.length - 1, (state.charOffset || 0) + (e.charIndex || 0));
@@ -1536,10 +1543,11 @@ function startSpeech() {
     state.charOffset = 0;
     if (state.currentChapter < state.chapters.length - 1) {
       setTimeout(() => {
-        loadChapterMaybeWeb(state.currentChapter + 1, 0).then(() => startSpeech());
-        return;
-        state.isPlaying = true;
-        $('play-btn').textContent = '\u23F8';
+        loadChapterMaybeWeb(state.currentChapter + 1, 0).then(() => {
+          state.isPlaying = true;
+          $('play-btn').textContent = '\u23F8';
+          startSpeech();
+        });
       }, 800);
     }
   });
@@ -1627,6 +1635,25 @@ function saveProgress() {
       charOffset: state.charOffset,
       ts: Date.now(),
     }));
+    pruneProgress();
+  } catch(e) {}
+}
+
+function pruneProgress(max = 20) {
+  try {
+    const keys = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith('inkcast_') && k !== 'inkcast_speed' && k !== 'inkcast_voice') {
+        try {
+          const val = JSON.parse(localStorage.getItem(k));
+          keys.push({ k, ts: val.ts || 0 });
+        } catch(e) {}
+      }
+    }
+    if (keys.length <= max) return;
+    keys.sort((a, b) => b.ts - a.ts);
+    keys.slice(max).forEach(({ k }) => localStorage.removeItem(k));
   } catch(e) {}
 }
 
