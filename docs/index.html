@@ -1538,7 +1538,7 @@ function startSpeech() {
     ? ch.text.slice(state.charOffset)
     : ch.text;
 
-  const utter = new SpeechSynthesisUtterance(text);
+  const utter = new SpeechSynthesisUtterance(text.replace(/\n+/g, ' '));
   utter.rate = state.speed;
   if (state.voice) utter.voice = state.voice;
   state.wordIndex = 0;
