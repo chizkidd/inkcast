@@ -1950,7 +1950,23 @@ function extractPageContent(doc, url) {
   }
   if (!container) container = doc.body;
 
-  let text = container.innerText || container.textContent || '';
+  // Inject sentinel strings at <br> tags and block-level boundaries before
+  // reading textContent. This handles sites that use <br><br> for paragraphs
+  // (e.g. paulgraham.com) as well as sites that use <p> or <div> tags.
+  const SENTINEL = '\u0002\n\n';
+  const BLOCK_TAGS = new Set(['P','H1','H2','H3','H4','H5','H6','LI','BLOCKQUOTE','PRE','TD','TH','DIV','TR','SECTION','ARTICLE']);
+  const tw = doc.createTreeWalker(container, NodeFilter.SHOW_ELEMENT);
+  const toMark = [];
+  let twNode;
+  while ((twNode = tw.nextNode())) {
+    if (twNode.tagName === 'BR' || BLOCK_TAGS.has(twNode.tagName)) toMark.push(twNode);
+  }
+  toMark.forEach(el => el.insertAdjacentText('beforebegin', SENTINEL));
+  let text = (container.textContent || '')
+    .split(SENTINEL)
+    .map(s => s.trim())
+    .filter(Boolean)
+    .join('\n\n');
   text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
   if (text.length < 100) return null;
 
