@@ -1938,9 +1938,16 @@ function loadWebArticles(results) {
   loadChapter(0, 0);
 }
 
-// ---- CONTENT EXTRACTION ----
+// ---- CONTENT EXTRACTION -----
 function extractPageContent(doc, url) {
   doc.querySelectorAll('script,style,nav,header,footer,aside,[role="navigation"],[role="banner"],[role="complementary"],noscript,iframe,.nav,.menu,.sidebar,.ad,.advertisement').forEach(el => el.remove());
+
+  // Strip footnote/reference links — inline anchors whose text is short and
+  // purely numeric or bracketed (e.g. paulgraham [1], Wikipedia [edit], etc.)
+  doc.querySelectorAll('a[href]').forEach(a => {
+    const t = a.textContent.trim();
+    if (/^\[?[\d\s]+\]?$/.test(t) || /^\[(edit|note|ref|↑|↩)\]$/i.test(t)) a.remove();
+  });
 
   const mainSelectors = ['article', 'main', '[role="main"]', '.post-content', '.article-content', '.entry-content', '.content', '#content', '#main'];
   let container = null;
@@ -1950,10 +1957,8 @@ function extractPageContent(doc, url) {
   }
   if (!container) container = doc.body;
 
-
-  // Inject sentinel strings at <br> tags and block-level boundaries before
-  // reading textContent. This handles sites that use <br><br> for paragraphs
-  // (e.g. paulgraham.com) as well as sites that use <p> or <div> tags.
+  // Inject sentinels at <br> and block-level boundaries so textContent
+  // produces correct paragraph breaks regardless of markup style.
   const SENTINEL = '||INKCAST_BREAK||';
   const BLOCK_TAGS = new Set(['P','H1','H2','H3','H4','H5','H6','LI','BLOCKQUOTE','PRE','TD','TH','DIV','TR','SECTION','ARTICLE']);
   const tw = doc.createTreeWalker(container, NodeFilter.SHOW_ELEMENT);
@@ -1965,11 +1970,15 @@ function extractPageContent(doc, url) {
   toMark.forEach(el => el.insertAdjacentText('beforebegin', SENTINEL));
   let text = (container.textContent || '')
     .split(SENTINEL)
-    .map(s => s.trim())
+    .map(chunk => {
+      // HTML collapses all whitespace (newlines, tabs, multiple spaces) to a
+      // single space within a block. Replicate that here since we're reading
+      // raw textContent from an unrendered DOMParser document.
+      return chunk.replace(/\s+/g, ' ').trim();
+    })
     .filter(Boolean)
-    .join('\n\n')
-    .replace(/\|\|INKCAST_BREAK\|\|/g, '\n\n'); // strip any that leaked through
-  text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+    .join('\n\n');
+  text = text.replace(/\n{3,}/g, '\n\n').trim();
   if (text.length < 100) return null;
 
   const titleEl = doc.querySelector('h1') || doc.querySelector('title');
