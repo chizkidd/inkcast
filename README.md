@@ -1,7 +1,5 @@
 # Inkcast 🎙️
 
-![visitor badge](https://visitor-badge.laobi.icu/badge?page_id=chizkidd.inkcast)
-
 A lightweight, privacy-first audiobook player that runs entirely in your browser. Drop in an epub or PDF, paste any article URL, and start listening immediately; no installs needed, no account required, no files ever leave your device. Built for iPhone but works anywhere.
 
 ---
