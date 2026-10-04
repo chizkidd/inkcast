@@ -1,0 +1,1992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+<!-- SEO -->
+<title>Inkcast — Listen to Any EPUB or PDF Book, Free</title>
+<meta name="description" content="Inkcast is a free, privacy-first audiobook player for EPUB and PDF files. No installs, no uploads, no account. Works in your browser on iPhone, Android, and desktop.">
+<meta name="keywords" content="epub reader, pdf audiobook, epub to audio, listen to epub, read epub aloud, pdf text to speech, audiobook player browser, free epub player">
+<meta name="author" content="chizkidd">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://chizkidd.github.io/inkcast/">
+
+<!-- Open Graph (social sharing) -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Inkcast — Listen to Any EPUB or PDF Book, Free">
+<meta property="og:description" content="Drop any EPUB or PDF and start listening. Free, private, on-device. No account needed.">
+<meta property="og:url" content="https://chizkidd.github.io/inkcast/">
+<meta property="og:site_name" content="Inkcast">
+
+<!-- Twitter card -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Inkcast — Listen to Any EPUB or PDF Book, Free">
+<meta name="twitter:description" content="Drop any EPUB or PDF and start listening. Free, private, on-device. No account needed.">
+
+<!-- iOS -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Inkcast">
+<meta name="theme-color" content="#f5f0e8">
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9R333FL18M"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-9R333FL18M', {
+    'anonymize_ip': true,
+    'allow_google_signals': false,
+    'allow_ad_personalization_signals': false
+  });
+</script>
+
+<!-- Inline favicon (no extra file needed) -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎙️</text></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231a1208'/><text x='50' y='62' font-size='55' text-anchor='middle'>🎙️</text></svg>">
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1208;
+    --paper: #f5f0e8;
+    --cream: #ede7d9;
+    --amber: #c8872a;
+    --amber-light: #e8a84a;
+    --amber-dim: rgba(200,135,42,0.15);
+    --shadow: rgba(26,18,8,0.18);
+    --muted: #8a7a68;
+    --serif: 'Playfair Display', Georgia, serif;
+    --mono: 'DM Mono', 'Courier New', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--serif);
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.5;
+  }
+
+  #upload-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100dvh;
+    padding: 2rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .brand {
+    font-family: var(--serif);
+    font-size: 3.5rem;
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin-bottom: 0.25rem;
+  }
+
+  .brand span { color: var(--amber); }
+
+  .tagline {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 3rem;
+  }
+
+  .drop-zone {
+    width: 100%;
+    max-width: 420px;
+    border: 2px dashed var(--amber);
+    border-radius: 2px;
+    padding: 3.5rem 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: rgba(200,135,42,0.03);
+    position: relative;
+  }
+
+  .drop-zone:hover, .drop-zone.drag-over {
+    background: var(--amber-dim);
+    border-style: solid;
+  }
+
+  .drop-zone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+
+  .drop-icon { font-size: 2.5rem; margin-bottom: 1rem; display: block; }
+
+  .drop-zone h2 {
+    font-size: 1.1rem;
+    font-weight: 400;
+    margin-bottom: 0.5rem;
+    color: var(--ink);
+  }
+
+  .drop-zone p {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  .format-badges {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-top: 1.1rem;
+  }
+
+  .format-badge {
+    font-family: var(--mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.14em;
+    padding: 0.18rem 0.55rem;
+    border-radius: 2px;
+    text-transform: uppercase;
+  }
+
+  .badge-epub { border: 1px solid var(--amber); color: var(--amber); }
+  .badge-pdf  { border: 1px solid #b43c28; color: #b43c28; }
+
+  #player-screen {
+    display: none;
+    flex-direction: column;
+    min-height: 100dvh;
+    position: relative;
+    z-index: 1;
+  }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--cream);
+    position: sticky;
+    top: 0;
+    background: var(--paper);
+    z-index: 10;
+  }
+
+  .topbar-brand { font-family: var(--serif); font-style: italic; font-size: 1.4rem; color: var(--ink); }
+  .topbar-brand span { color: var(--amber); }
+
+  .book-title-top {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    text-transform: uppercase;
+    text-align: center;
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .btn-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--ink);
+    padding: 0.4rem;
+    border-radius: 4px;
+    font-size: 1.1rem;
+    transition: color 0.15s;
+    display: flex;
+    align-items: center;
+  }
+  .btn-icon:hover { color: var(--amber); }
+
+  #chapters-panel {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    pointer-events: none;
+  }
+  #chapters-panel.open { pointer-events: all; }
+
+  .panel-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(26,18,8,0.45);
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+  #chapters-panel.open .panel-backdrop { opacity: 1; }
+
+  .panel-drawer {
+    position: relative;
+    width: min(320px, 85vw);
+    height: 100%;
+    background: var(--cream);
+    overflow-y: auto;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    box-shadow: 4px 0 24px var(--shadow);
+    display: flex;
+    flex-direction: column;
+  }
+  #chapters-panel.open .panel-drawer { transform: translateX(0); }
+
+  .panel-header {
+    padding: 1.25rem 1.25rem 0.75rem;
+    border-bottom: 1px solid rgba(26,18,8,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    background: var(--cream);
+    z-index: 1;
+  }
+
+  .panel-header h3 {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 400;
+  }
+
+  .chapter-list { list-style: none; padding: 0.5rem 0; flex: 1; }
+
+  .chapter-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.25rem;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-left: 3px solid transparent;
+  }
+  .chapter-item:hover { background: rgba(200,135,42,0.08); }
+  .chapter-item.active { border-left-color: var(--amber); background: var(--amber-dim); }
+
+  .chapter-num { font-family: var(--mono); font-size: 0.6rem; color: var(--muted); min-width: 2rem; text-align: right; }
+  .chapter-name { font-size: 0.9rem; font-weight: 400; line-height: 1.3; color: var(--ink); }
+  .chapter-item.active .chapter-name { font-weight: 700; }
+
+  .content-area {
+    flex: 1;
+    padding: 1.5rem 1.25rem 10rem;
+    max-width: 680px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .chapter-heading {
+    font-family: var(--serif);
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    line-height: 1.2;
+    animation: fadeUp 0.3s ease;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .chapter-meta {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+
+  .type-pill {
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    padding: 0.1rem 0.45rem;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 400;
+  }
+  .pill-epub { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(200,135,42,0.3); }
+  .pill-pdf  { background: rgba(180,60,40,0.1); color: #b43c28; border: 1px solid rgba(180,60,40,0.25); }
+  .pill-web  { background: rgba(40,100,180,0.1); color: #2864b4; border: 1px solid rgba(40,100,180,0.25); }
+
+  #text-display {
+    font-size: 1.05rem;
+    line-height: 1.85;
+    color: var(--ink);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .spoken-word { background: var(--amber-dim); border-radius: 2px; }
+
+  .progress-bar-track {
+    height: 2px;
+    background: var(--cream);
+    width: 100%;
+    margin-bottom: 1.5rem;
+    border-radius: 1px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--amber);
+    width: 0%;
+    transition: width 0.5s linear;
+    border-radius: 1px;
+  }
+
+  .player-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--ink);
+    color: var(--paper);
+    z-index: 20;
+    border-top: 2px solid var(--amber);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  .player-inner {
+    padding: 0.9rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    max-width: 680px;
+    margin: 0 auto;
+  }
+
+  .player-row { display: flex; align-items: center; gap: 0.75rem; }
+  .player-info { flex: 1; overflow: hidden; }
+
+  .player-chapter-name {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--paper);
+  }
+
+  .player-chapter-pos {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: rgba(245,240,232,0.45);
+    letter-spacing: 0.1em;
+  }
+
+  .controls { display: flex; align-items: center; gap: 0.5rem; }
+
+  .ctrl-btn {
+    background: none;
+    border: none;
+    color: var(--paper);
+    cursor: pointer;
+    font-size: 1.3rem;
+    padding: 0.3rem;
+    transition: color 0.15s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 50%;
+  }
+  .ctrl-btn:active { transform: scale(0.9); }
+  .ctrl-btn:hover { color: var(--amber-light); }
+
+  .ctrl-btn.play-btn {
+    background: var(--amber);
+    color: var(--ink);
+    font-size: 1.1rem;
+    width: 2.6rem;
+    height: 2.6rem;
+  }
+  .ctrl-btn.play-btn:hover { background: var(--amber-light); }
+
+  .speed-row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+
+  .speed-label {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: rgba(245,240,232,0.45);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .speed-btns { display: flex; gap: 0.3rem; }
+
+  .speed-btn {
+    background: rgba(245,240,232,0.08);
+    border: 1px solid rgba(245,240,232,0.12);
+    color: rgba(245,240,232,0.6);
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    padding: 0.18rem 0.45rem;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .speed-btn.active, .speed-btn:hover {
+    background: var(--amber);
+    color: var(--ink);
+    border-color: var(--amber);
+  }
+
+  .voice-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .voice-current {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    color: rgba(245,240,232,0.55);
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .voice-current span { color: rgba(245,240,232,0.85); }
+
+  .voice-settings-btn {
+    background: rgba(245,240,232,0.08);
+    border: 1px solid rgba(245,240,232,0.12);
+    color: rgba(245,240,232,0.6);
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .voice-settings-btn:hover { background: var(--amber); color: var(--ink); border-color: var(--amber); }
+
+  /* ---- VOICE MODAL ---- */
+  #voice-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 400;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    pointer-events: none;
+  }
+  #voice-modal.open { pointer-events: all; }
+
+  .voice-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(26,18,8,0.55);
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+  #voice-modal.open .voice-modal-backdrop { opacity: 1; }
+
+  .voice-modal-sheet {
+    position: relative;
+    background: var(--paper);
+    width: 100%;
+    max-width: 520px;
+    border-radius: 12px 12px 0 0;
+    padding: 1rem 1.5rem 2.5rem;
+    transform: translateY(100%);
+    transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+    border-top: 2px solid var(--amber);
+    max-height: 90dvh;
+    overflow-y: auto;
+  }
+  #voice-modal.open .voice-modal-sheet { transform: translateY(0); }
+
+  .voice-modal-handle {
+    width: 36px;
+    height: 3px;
+    background: var(--cream);
+    border-radius: 2px;
+    margin: 0 auto 1.25rem;
+  }
+
+  .voice-modal-title {
+    font-family: var(--serif);
+    font-size: 1.3rem;
+    font-style: italic;
+    margin-bottom: 0.3rem;
+  }
+
+  .voice-modal-subtitle {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    margin-bottom: 1.5rem;
+    line-height: 1.7;
+  }
+
+  .voice-group { margin-bottom: 1.25rem; }
+
+  .voice-group-label {
+    font-family: var(--mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+  }
+
+  .voice-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .voice-chip {
+    background: var(--cream);
+    border: 1px solid rgba(26,18,8,0.1);
+    border-radius: 20px;
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    padding: 0.35rem 0.85rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--ink);
+  }
+  .voice-chip:hover { border-color: var(--amber); color: var(--amber); }
+  .voice-chip.active { background: var(--amber); border-color: var(--amber); color: var(--ink); font-weight: 700; }
+  .voice-chip.unavailable { opacity: 0.3; cursor: default; }
+
+  .voice-modal-tip {
+    background: var(--amber-dim);
+    border-left: 3px solid var(--amber);
+    padding: 0.85rem 1rem;
+    border-radius: 0 4px 4px 0;
+    margin-top: 1.25rem;
+  }
+
+  .voice-modal-tip p {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    color: var(--ink);
+    line-height: 1.8;
+  }
+
+  .voice-modal-tip strong { color: var(--amber); }
+
+  .voice-modal-close {
+    display: block;
+    width: 100%;
+    margin-top: 1.25rem;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    padding: 0.85rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .voice-modal-close:hover { background: #2e2010; }
+
+  /* ---- LOADING ---- */
+  #loading {
+    position: fixed;
+    inset: 0;
+    background: var(--paper);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    gap: 1rem;
+  }
+
+  .loader-text {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .loader-bar { width: 120px; height: 2px; background: var(--cream); border-radius: 1px; overflow: hidden; }
+  .loader-bar-fill {
+    height: 100%;
+    background: var(--amber);
+    animation: loadSlide 1.2s ease-in-out infinite;
+  }
+  @keyframes loadSlide {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(200%); }
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 8rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    padding: 0.5rem 1rem;
+    border-radius: 2px;
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 300;
+    border-left: 3px solid var(--amber);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+
+  /* ---- UPLOAD TABS ---- */
+  .upload-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--cream);
+    width: 100%;
+    max-width: 420px;
+  }
+
+  .upload-tab {
+    flex: 1;
+    background: none;
+    border: none;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0.6rem 1rem;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.15s;
+  }
+
+  .upload-tab.active {
+    color: var(--amber);
+    border-bottom-color: var(--amber);
+  }
+
+  .upload-tab:hover { color: var(--ink); }
+
+  /* ---- URL INPUT PANEL ---- */
+  #url-panel {
+    display: none;
+    width: 100%;
+    max-width: 420px;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  #url-panel.active { display: flex; }
+
+  .url-input-wrap {
+    display: flex;
+    gap: 0.5rem;
+    align-items: stretch;
+  }
+
+  #url-input {
+    flex: 1;
+    background: rgba(200,135,42,0.04);
+    border: 2px solid var(--amber);
+    border-radius: 2px;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--ink);
+    padding: 0.75rem 1rem;
+    outline: none;
+    transition: background 0.15s;
+  }
+
+  #url-input:focus { background: var(--amber-dim); }
+  #url-input::placeholder { color: var(--muted); }
+
+  #url-go-btn {
+    background: var(--amber);
+    border: none;
+    color: var(--ink);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 0.75rem 1.25rem;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+
+  #url-go-btn:hover { background: var(--amber-light); }
+  #url-go-btn:disabled { opacity: 0.5; cursor: default; }
+
+  .url-hint {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    color: var(--muted);
+    line-height: 1.7;
+    text-align: center;
+  }
+  @media (min-width: 600px) {
+    .brand { font-size: 5rem; }
+    .content-area { padding: 2rem 2rem 12rem; }
+    #text-display { font-size: 1.1rem; }
+  }
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div style="font-family:'Playfair Display',serif;font-style:italic;font-size:1.8rem;color:#1a1208">Ink<span style="color:#c8872a">cast</span></div>
+  <div class="loader-bar"><div class="loader-bar-fill"></div></div>
+  <div class="loader-text" id="loading-text">Parsing file...</div>
+</div>
+
+<!-- Upload Screen -->
+<div id="upload-screen">
+  <div class="brand">Ink<span>cast</span></div>
+  <div class="tagline">listen to any book, anywhere</div>
+
+  <!-- Tabs -->
+  <div class="upload-tabs">
+    <button class="upload-tab active" id="tab-file">📖 File</button>
+    <button class="upload-tab" id="tab-url">🔗 URL</button>
+  </div>
+
+  <!-- File Panel -->
+  <div id="file-panel">
+    <div class="drop-zone" id="drop-zone">
+      <input type="file" id="file-input" accept=".epub,.pdf">
+      <span class="drop-icon">📖</span>
+      <h2>Drop your book here</h2>
+      <p>or tap to choose a file</p>
+      <div class="format-badges">
+        <span class="format-badge badge-epub">epub</span>
+        <span class="format-badge badge-pdf">pdf</span>
+      </div>
+    </div>
+    <div style="margin-top:1.5rem;font-family:'DM Mono',monospace;font-size:0.65rem;color:#8a7a68;text-align:center;line-height:1.8">
+      All processing happens on-device.<br>Your book never leaves your device.
+    </div>
+  </div>
+
+  <!-- URL Panel -->
+  <div id="url-panel">
+    <div class="url-input-wrap">
+      <input type="url" id="url-input" placeholder="https://paulgraham.com/articles.html" autocomplete="off" autocorrect="off" spellcheck="false">
+      <button id="url-go-btn">Go</button>
+    </div>
+    <div class="url-hint">
+      Paste any article or webpage URL.<br>
+      Works great with essays, blog posts, and documentation.
+    </div>
+  </div>
+</div>
+
+
+<!-- Player Screen -->
+<div id="player-screen">
+  <div class="topbar">
+    <button class="btn-icon" id="open-chapters-btn" title="Chapters / Pages">☰</button>
+    <div class="book-title-top" id="book-title-display"></div>
+    <button class="btn-icon" id="new-book-btn" title="Load new book" style="font-size:0.9rem">＋</button>
+  </div>
+
+  <div class="content-area">
+    <div class="progress-bar-track">
+      <div class="progress-bar-fill" id="progress-fill"></div>
+    </div>
+    <div class="chapter-heading" id="chapter-title"></div>
+    <div class="chapter-meta" id="chapter-meta"></div>
+    <div id="text-display"></div>
+  </div>
+</div>
+
+<!-- Chapters / Pages Panel -->
+<div id="chapters-panel">
+  <div class="panel-backdrop" id="panel-backdrop"></div>
+  <div class="panel-drawer">
+    <div class="panel-header">
+      <h3 id="panel-heading">Contents</h3>
+      <button class="btn-icon" id="close-chapters-btn">✕</button>
+    </div>
+    <ul class="chapter-list" id="chapter-list"></ul>
+  </div>
+</div>
+
+<!-- Player Bar -->
+<div class="player-bar" id="player-bar" style="display:none">
+  <div class="player-inner">
+    <div class="player-row">
+      <div class="player-info">
+        <div class="player-chapter-name" id="player-chapter-name">-</div>
+        <div class="player-chapter-pos" id="player-pos">-</div>
+      </div>
+      <div class="controls">
+        <button class="ctrl-btn" id="prev-chapter-btn" title="Previous">⏮</button>
+        <button class="ctrl-btn" id="rewind-btn" title="Rewind 15s">↺</button>
+        <button class="ctrl-btn play-btn" id="play-btn">▶</button>
+        <button class="ctrl-btn" id="forward-btn" title="Forward 30s">↻</button>
+        <button class="ctrl-btn" id="next-chapter-btn" title="Next">⏭</button>
+      </div>
+    </div>
+    <div class="speed-row">
+      <span class="speed-label">Speed</span>
+      <div class="speed-btns" id="speed-btns">
+        <button class="speed-btn" data-speed="0.75">0.75×</button>
+        <button class="speed-btn active" data-speed="1">1×</button>
+        <button class="speed-btn" data-speed="1.25">1.25×</button>
+        <button class="speed-btn" data-speed="1.5">1.5×</button>
+        <button class="speed-btn" data-speed="2">2×</button>
+      </div>
+    </div>
+    <div class="voice-row">
+      <div class="voice-current">Voice: <span id="voice-current-label">loading...</span></div>
+      <button class="voice-settings-btn" id="open-voice-modal-btn">change voice</button>
+    </div>
+  </div>
+</div>
+
+<!-- Voice Modal -->
+<div id="voice-modal">
+  <div class="voice-modal-backdrop" id="voice-modal-backdrop"></div>
+  <div class="voice-modal-sheet">
+    <div class="voice-modal-handle"></div>
+    <div class="voice-modal-title">Voice Settings</div>
+    <div class="voice-modal-subtitle">
+      Select a voice below. Greyed out voices are not installed on your device yet.
+    </div>
+
+    <div class="voice-group">
+      <div class="voice-group-label">US English</div>
+      <div class="voice-chips" id="chips-us"></div>
+    </div>
+
+    <div class="voice-group">
+      <div class="voice-group-label">UK English</div>
+      <div class="voice-chips" id="chips-uk"></div>
+    </div>
+
+    <div class="voice-group">
+      <div class="voice-group-label">AU / Other English</div>
+      <div class="voice-chips" id="chips-other"></div>
+    </div>
+
+    <div class="voice-group" id="group-all-voices" style="display:none">
+      <div class="voice-group-label">All Available Voices</div>
+      <div class="voice-chips" id="chips-all"></div>
+    </div>
+
+    <div class="voice-modal-tip">
+      <p>
+        <strong>Want better voices?</strong> On iPhone go to<br>
+        <strong>Settings &rarr; Accessibility &rarr; Spoken Content &rarr; Voices &rarr; English</strong><br>
+        and download <strong>Siri Voice 1</strong> or <strong>Siri Voice 2</strong> for the most natural sound.
+        <strong>Daniel</strong> (UK) and <strong>Karen</strong> (AU) are also excellent.
+      </p>
+    </div>
+
+    <button class="voice-modal-close" id="close-voice-modal-btn">Done</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- CDN libraries with error detection -->
+<script>
+window._cdnErrors = [];
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"
+  onerror="window._cdnErrors.push('JSZip')"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"
+  onerror="window._cdnErrors.push('PDF.js')"></script>
+
+<script>
+// =============================================================================
+// TODO: UPGRADE TO OPENAI TTS
+// When you are ready to use OpenAI TTS for higher quality voices:
+//
+// 1. Add your API key (or proxy through your own backend to keep it secret):
+//    const OPENAI_API_KEY = 'sk-...';
+//
+// 2. Replace startSpeech() with this async version:
+//    async function startSpeech() {
+//      const ch = state.chapters[state.currentChapter];
+//      const text = ch.text.slice(state.charOffset);
+//      // Chunk into 4000-char pieces to stay under API limit
+//      const chunk = text.slice(0, 4000);
+//      const res = await fetch('https://api.openai.com/v1/audio/speech', {
+//        method: 'POST',
+//        headers: {
+//          'Authorization': `Bearer ${OPENAI_API_KEY}`,
+//          'Content-Type': 'application/json'
+//        },
+//        body: JSON.stringify({ model: 'tts-1', voice: state.openaiVoice, input: chunk })
+//      });
+//      const blob = await res.blob();
+//      const audio = new Audio(URL.createObjectURL(blob));
+//      audio.playbackRate = state.speed;
+//      audio.play();
+//      state.audioEl = audio;
+//      audio.onended = () => { /* advance to next chunk or chapter */ };
+//    }
+//
+// 3. Available voices:
+//    onyx     = deep male (best for non-fiction)
+//    nova     = warm female (best for fiction)
+//    shimmer  = expressive female
+//    alloy    = neutral
+//    echo     = male
+//    fable    = storytelling / narrative
+// =============================================================================
+
+// ---- CDN CHECK ----
+// Warn user if a library failed to load rather than silently breaking
+window.addEventListener('DOMContentLoaded', () => {
+  if (window._cdnErrors && window._cdnErrors.length) {
+    showToast('Network error loading ' + window._cdnErrors.join(', ') + '. Check your connection.');
+  }
+});
+
+// ---- STATE ----
+const state = {
+  chapters: [],
+  currentChapter: 0,
+  isPlaying: false,
+  speed: 1,
+  voice: null,
+  wordIndex: 0,
+  words: [],
+  charOffset: 0,
+  bookId: '',
+  fileType: '',
+  userHasInteracted: false, // guard for iOS speech synthesis
+};
+
+const $ = id => document.getElementById(id);
+const uploadScreen  = $('upload-screen');
+const playerScreen  = $('player-screen');
+const playerBar     = $('player-bar');
+const fileInput     = $('file-input');
+const dropZone      = $('drop-zone');
+const textDisplay   = $('text-display');
+const chapterTitle  = $('chapter-title');
+const chapterMeta   = $('chapter-meta');
+const bookTitleTop  = $('book-title-display');
+const playerChName  = $('player-chapter-name');
+const playerPos     = $('player-pos');
+const progressFill  = $('progress-fill');
+const chapterList   = $('chapter-list');
+const chaptersPanel = $('chapters-panel');
+const voiceModal    = $('voice-modal');
+
+// Track user interaction for iOS speech synthesis requirement
+document.addEventListener('touchstart', () => { state.userHasInteracted = true; }, { once: true });
+document.addEventListener('click', () => { state.userHasInteracted = true; }, { once: true });
+
+// ---- VOICE DEFINITIONS ----
+const VOICE_GROUPS = {
+  us: [
+    { label: 'Samantha (US)',  match: /samantha/i },
+    { label: 'Alex (US)',      match: /\balex\b/i },
+    { label: 'Ava (US)',       match: /\bava\b/i },
+    { label: 'Siri Voice 1',   match: /siri.*voice.*1|siri.*1/i },
+    { label: 'Siri Voice 2',   match: /siri.*voice.*2|siri.*2/i },
+    { label: 'Google US',      match: /google.*us.*eng|us.*english.*google/i },
+    { label: 'Zira (US)',      match: /zira/i },
+    { label: 'David (US)',     match: /\bdavid\b/i },
+    { label: 'Mark (US)',      match: /\bmark\b/i },
+  ],
+  uk: [
+    { label: 'Daniel (UK)',    match: /\bdaniel\b/i },
+    { label: 'Kate (UK)',      match: /\bkate\b/i },
+    { label: 'Serena (UK)',    match: /serena/i },
+    { label: 'Oliver (UK)',    match: /oliver/i },
+    { label: 'Google UK M',    match: /google.*uk.*male|uk.*male/i },
+    { label: 'Google UK F',    match: /google.*uk.*fem|uk.*fem/i },
+    { label: 'Hazel (UK)',     match: /hazel/i },
+    { label: 'George (UK)',    match: /george/i },
+  ],
+  other: [
+    { label: 'Karen (AU)',     match: /karen/i },
+    { label: 'Lee (AU)',       match: /\blee\b/i },
+    { label: 'Moira (IE)',     match: /moira/i },
+    { label: 'Fiona (Scot)',   match: /fiona/i },
+  ],
+};
+
+let allVoices = [];
+
+function getEnglishVoices() {
+  return speechSynthesis.getVoices().filter(v => v.lang.startsWith('en'));
+}
+
+function findVoice(matchRegex) {
+  return getEnglishVoices().find(v => matchRegex.test(v.name)) || null;
+}
+
+function bestDefaultVoice() {
+  const priority = [
+    /siri.*voice.*[12]/i,
+    /samantha/i,
+    /daniel/i,
+    /karen/i,
+    /moira/i,
+    /alex/i,
+  ];
+  for (const p of priority) {
+    const v = findVoice(p);
+    if (v) return v;
+  }
+  return getEnglishVoices()[0] || speechSynthesis.getVoices()[0] || null;
+}
+
+function buildVoiceModal() {
+  const installed = getEnglishVoices();
+
+  function makeChips(containerId, group) {
+    const container = $(containerId);
+    if (!container) return;
+    container.innerHTML = '';
+    for (const def of group) {
+      const found = installed.find(v => def.match.test(v.name));
+      const chip = document.createElement('button');
+      chip.className = 'voice-chip' + (found ? '' : ' unavailable');
+      chip.textContent = def.label;
+      chip.title = found ? found.name : 'Not installed — download in iOS Settings';
+      if (found) {
+        chip.addEventListener('click', () => selectVoice(found));
+      }
+      container.appendChild(chip);
+    }
+  }
+
+  makeChips('chips-us', VOICE_GROUPS.us);
+  makeChips('chips-uk', VOICE_GROUPS.uk);
+  makeChips('chips-other', VOICE_GROUPS.other);
+
+  // Show unlisted voices in catch-all group
+  const knownPatterns = [
+    ...VOICE_GROUPS.us,
+    ...VOICE_GROUPS.uk,
+    ...VOICE_GROUPS.other,
+  ].map(d => d.match);
+  const unknown = installed.filter(v => !knownPatterns.some(p => p.test(v.name)));
+  const groupEl = $('group-all-voices');
+  if (unknown.length && groupEl) {
+    groupEl.style.display = 'block';
+    const allChips = $('chips-all');
+    allChips.innerHTML = '';
+    unknown.forEach(v => {
+      const chip = document.createElement('button');
+      chip.className = 'voice-chip';
+      chip.textContent = v.name.replace('Google ', '').replace(' English', '');
+      chip.title = v.name;
+      chip.addEventListener('click', () => selectVoice(v));
+      allChips.appendChild(chip);
+    });
+  }
+
+  updateActiveChip();
+}
+
+function selectVoice(voice) {
+  state.voice = voice;
+  updateActiveChip();
+  updateVoiceLabel();
+  try { localStorage.setItem('inkcast_voice', voice.name); } catch(e) {}
+  if (state.isPlaying) { stopSpeech(); startSpeech(); }
+}
+
+function updateActiveChip() {
+  document.querySelectorAll('.voice-chip').forEach(c => {
+    c.classList.toggle('active', !!(state.voice && c.title === state.voice.name));
+  });
+}
+
+function updateVoiceLabel() {
+  const label = $('voice-current-label');
+  if (!label) return;
+  label.textContent = state.voice
+    ? state.voice.name.replace('Google ', '').replace(' English', '')
+    : 'none found';
+}
+
+function initVoices() {
+  allVoices = speechSynthesis.getVoices();
+  if (!allVoices.length) return;
+
+  let defaultVoice = bestDefaultVoice();
+  try {
+    const saved = localStorage.getItem('inkcast_voice');
+    if (saved) {
+      const found = allVoices.find(v => v.name === saved);
+      if (found) defaultVoice = found;
+    }
+  } catch(e) {}
+
+  state.voice = defaultVoice;
+  updateVoiceLabel();
+  buildVoiceModal();
+}
+
+speechSynthesis.addEventListener('voiceschanged', initVoices);
+initVoices();
+
+// ---- VOICE MODAL ----
+$('open-voice-modal-btn').addEventListener('click', () => {
+  buildVoiceModal();
+  voiceModal.classList.add('open');
+});
+$('close-voice-modal-btn').addEventListener('click', () => voiceModal.classList.remove('open'));
+$('voice-modal-backdrop').addEventListener('click', () => voiceModal.classList.remove('open'));
+
+// ---- LOADING ----
+function showLoading(msg) {
+  $('loading-text').textContent = msg || 'Parsing file...';
+  $('loading').style.display = 'flex';
+}
+function hideLoading() { $('loading').style.display = 'none'; }
+
+// ---- EPUB PARSER ----
+async function parseEpub(file) {
+  if (!window.JSZip) {
+    showToast('JSZip library not loaded. Check your connection and refresh.');
+    return null;
+  }
+  showLoading('Parsing epub...');
+  try {
+    const zip = await JSZip.loadAsync(file);
+    const containerXml = await zip.file('META-INF/container.xml').async('string');
+    const rootfilePath = containerXml.match(/full-path="([^"]+)"/)[1];
+    const opfText = await zip.file(rootfilePath).async('string');
+    const parser = new DOMParser();
+    const opf = parser.parseFromString(opfText, 'application/xml');
+
+    const titleEl = opf.querySelector('title');
+    const bookTitle = titleEl ? titleEl.textContent.trim() : file.name.replace('.epub','');
+
+    const spineItems = Array.from(opf.querySelectorAll('spine itemref')).map(el => el.getAttribute('idref'));
+    const manifest = {};
+    opf.querySelectorAll('manifest item').forEach(el => {
+      manifest[el.getAttribute('id')] = el.getAttribute('href');
+    });
+    const basePath = rootfilePath.includes('/') ? rootfilePath.split('/').slice(0,-1).join('/') + '/' : '';
+
+    let tocTitles = {};
+    const ncxId = opf.querySelector('spine')?.getAttribute('toc');
+    if (ncxId && manifest[ncxId]) {
+      try {
+        const ncxText = await zip.file(basePath + manifest[ncxId]).async('string');
+        const ncx = parser.parseFromString(ncxText, 'application/xml');
+        ncx.querySelectorAll('navPoint').forEach(np => {
+          const src = np.querySelector('content')?.getAttribute('src')?.split('#')[0];
+          const label = np.querySelector('navLabel text')?.textContent?.trim();
+          if (src && label) tocTitles[src] = label;
+        });
+      } catch(e) {}
+    }
+
+    if (!Object.keys(tocTitles).length) {
+      try {
+        const navItem = Array.from(opf.querySelectorAll('manifest item'))
+          .find(el => el.getAttribute('properties')?.includes('nav'));
+        if (navItem) {
+          const navText = await zip.file(basePath + navItem.getAttribute('href')).async('string');
+          const navDoc = parser.parseFromString(navText, 'text/html');
+          navDoc.querySelectorAll('nav a').forEach(a => {
+            const href = a.getAttribute('href')?.split('#')[0];
+            const label = a.textContent.trim();
+            if (href && label) tocTitles[href] = label;
+          });
+        }
+      } catch(e) {}
+    }
+
+    const chapters = [];
+    for (const id of spineItems) {
+      const href = manifest[id];
+      if (!href) continue;
+      const fileObj = zip.file(basePath + href) || zip.file(href);
+      if (!fileObj) continue;
+      try {
+        const html = await fileObj.async('string');
+        const doc = parser.parseFromString(html, 'text/html');
+        doc.querySelectorAll('script,style,nav,[role="doc-toc"]').forEach(el => el.remove());
+        // Strip footnotes and endnotes
+        doc.querySelectorAll(
+          'aside[epub\\:type="footnote"], aside[epub\\:type="endnote"], ' +
+          '[role="doc-footnote"], [role="doc-endnote"], ' +
+          '.footnote, .endnote, .footnotes, .endnotes'
+        ).forEach(el => el.remove());
+        // Strip inline note reference markers (superscript links back to notes)
+        doc.querySelectorAll(
+          'a[epub\\:type="noteref"], a[role="doc-noteref"]'
+        ).forEach(el => el.remove());
+        let text = (doc.body || doc.documentElement).innerText
+          || (doc.body || doc.documentElement).textContent || '';
+        text = text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').replace(/\n{3,}/g,'\n\n').trim();
+        if (text.length < 30) continue;
+        const hrefBase = href.split('/').pop();
+        let title = tocTitles[hrefBase] || tocTitles[href];
+        if (!title) {
+          const h = doc.querySelector('h1,h2,h3');
+          title = h ? h.textContent.trim() : `Section ${chapters.length + 1}`;
+        }
+        chapters.push({ title, text });
+      } catch(e) {}
+    }
+    hideLoading();
+    if (!chapters.length) {
+      showToast('Could not extract any text from this epub.');
+      return null;
+    }
+    return { title: bookTitle, chapters, type: 'epub' };
+  } catch(e) {
+    hideLoading();
+    showToast('Could not parse epub: ' + e.message);
+    return null;
+  }
+}
+
+// ---- PDF PARSER ----
+async function parsePdf(file) {
+  if (!window.pdfjsLib) {
+    showToast('PDF.js library not loaded. Check your connection and refresh.');
+    return null;
+  }
+  showLoading('Loading pdf...');
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const numPages = pdf.numPages;
+
+    let outline = [];
+    try { outline = await pdf.getOutline() || []; } catch(e) {}
+
+    let chapterBreaks = [];
+    if (outline.length > 0) {
+      for (const item of outline) {
+        try {
+          if (!item.dest) continue;
+          let dest = item.dest;
+          if (typeof dest === 'string') dest = await pdf.getDestination(dest);
+          if (dest && dest[0]) {
+            const pageIndex = await pdf.getPageIndex(dest[0]);
+            chapterBreaks.push({ pageNum: pageIndex + 1, title: item.title });
+          }
+        } catch(e) {}
+      }
+      chapterBreaks.sort((a, b) => a.pageNum - b.pageNum);
+    }
+
+    const pageTexts = [];
+    for (let i = 1; i <= numPages; i++) {
+      if (i % 5 === 0) {
+        showLoading(`Reading page ${i} of ${numPages}...`);
+        await new Promise(r => setTimeout(r, 0));
+      }
+      try {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        let lastY = null, lines = [], currentLine = [];
+        for (const item of content.items) {
+          const y = item.transform[5];
+          if (lastY !== null && Math.abs(y - lastY) > 5) {
+            lines.push(currentLine.join(''));
+            currentLine = [];
+          }
+          currentLine.push(item.str);
+          lastY = y;
+        }
+        if (currentLine.length) lines.push(currentLine.join(''));
+        pageTexts.push(lines.join('\n').trim());
+      } catch(e) { pageTexts.push(''); }
+    }
+
+    const bookTitle = file.name.replace(/\.pdf$/i, '');
+    let chapters = [];
+
+    if (chapterBreaks.length >= 2) {
+      for (let i = 0; i < chapterBreaks.length; i++) {
+        const start = chapterBreaks[i].pageNum - 1;
+        const end = i + 1 < chapterBreaks.length ? chapterBreaks[i+1].pageNum - 1 : numPages;
+        const text = pageTexts.slice(start, end).join('\n\n').trim();
+        if (text.length > 20) chapters.push({ title: chapterBreaks[i].title, text });
+      }
+    }
+
+    if (chapters.length < 2) {
+      chapters = [];
+      const chunkSize = numPages <= 10 ? 1 : numPages <= 50 ? 3 : numPages <= 200 ? 5 : 10;
+      for (let i = 0; i < numPages; i += chunkSize) {
+        const chunk = pageTexts.slice(i, i + chunkSize).join('\n\n').trim();
+        if (chunk.length < 20) continue;
+        const s = i + 1, e = Math.min(i + chunkSize, numPages);
+        chapters.push({ title: chunkSize === 1 ? `Page ${s}` : `Pages ${s}\u2013${e}`, text: chunk });
+      }
+    }
+
+    hideLoading();
+    if (!chapters.length) {
+      showToast('No readable text found. This may be a scanned PDF with no text layer.');
+      return null;
+    }
+    return { title: bookTitle, chapters, type: 'pdf' };
+  } catch(e) {
+    hideLoading();
+    showToast('Could not parse PDF: ' + e.message);
+    return null;
+  }
+}
+
+// ---- FILE HANDLING ----
+fileInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  const f = e.dataTransfer.files[0];
+  if (f && (f.name.toLowerCase().endsWith('.epub') || f.name.toLowerCase().endsWith('.pdf'))) {
+    handleFile(f);
+  } else {
+    showToast('Please drop an .epub or .pdf file');
+  }
+});
+
+async function handleFile(file) {
+  let result;
+  const name = file.name.toLowerCase();
+  if (name.endsWith('.pdf')) result = await parsePdf(file);
+  else if (name.endsWith('.epub')) result = await parseEpub(file);
+  else { showToast('Unsupported format. Use .epub or .pdf'); return; }
+
+  if (!result || !result.chapters.length) return;
+
+  state.chapters = result.chapters;
+  state.fileType = result.type;
+  state.bookId = file.name + '_' + file.size;
+  bookTitleTop.textContent = result.title;
+  $('panel-heading').textContent = result.type === 'pdf' ? 'Pages' : 'Chapters';
+
+  const saved = loadProgress();
+  state.currentChapter = Math.min(saved.chapter || 0, result.chapters.length - 1);
+  state.charOffset = saved.charOffset || 0;
+
+  buildChapterList();
+  showPlayer();
+  loadChapter(state.currentChapter, state.charOffset);
+
+  if (saved.chapter > 0 || saved.charOffset > 0) {
+    const unit = result.type === 'pdf' ? 'section' : 'chapter';
+    showToast('Resumed at ' + unit + ' ' + (state.currentChapter + 1));
+  }
+}
+
+// ---- UI ----
+function showPlayer() {
+  uploadScreen.style.display = 'none';
+  playerScreen.style.display = 'flex';
+  playerBar.style.display = 'block';
+}
+
+function showUpload() {
+  stopSpeech();
+  chaptersPanel.classList.remove('open');
+  playerScreen.style.display = 'none';
+  playerBar.style.display = 'none';
+  uploadScreen.style.display = 'flex';
+  fileInput.value = '';
+}
+
+$('new-book-btn').addEventListener('click', showUpload);
+
+// ---- CHAPTER LIST ----
+function buildChapterList() {
+  chapterList.innerHTML = state.chapters.map((ch, i) =>
+    `<li class="chapter-item${i===state.currentChapter?' active':''}" data-idx="${i}">
+       <span class="chapter-num">${String(i+1).padStart(2,'0')}</span>
+       <span class="chapter-name">${escHtml(ch.title)}</span>
+     </li>`
+  ).join('');
+  chapterList.querySelectorAll('.chapter-item').forEach(el => {
+    el.addEventListener('click', () => {
+      closeChapters();
+      stopSpeech();
+      loadChapterMaybeWeb(parseInt(el.dataset.idx), 0);
+    });
+  });
+}
+
+function updateChapterListActive() {
+  chapterList.querySelectorAll('.chapter-item').forEach(el => {
+    el.classList.toggle('active', parseInt(el.dataset.idx) === state.currentChapter);
+  });
+}
+
+// ---- LOAD CHAPTER ----
+function loadChapter(idx, charOffset) {
+  state.currentChapter = idx;
+  state.charOffset = charOffset || 0;
+  const ch = state.chapters[idx];
+  const total = state.chapters.length;
+  const isPdf = state.fileType === 'pdf';
+  const isWeb = state.fileType === 'web';
+  const unit = isPdf ? 'Section' : isWeb ? 'Article' : 'Chapter';
+
+  chapterTitle.textContent = ch.title;
+
+  const pillClass = isPdf ? 'pill-pdf' : isWeb ? 'pill-web' : 'pill-epub';
+  const pillLabel = isPdf ? 'PDF' : isWeb ? 'WEB' : 'EPUB';
+  chapterMeta.innerHTML =
+    `<span class="type-pill ${pillClass}">${pillLabel}</span>` +
+    `<span>${unit} ${idx+1} of ${total}&nbsp;&nbsp;&middot;&nbsp;&nbsp;${wordCount(ch.text)} words&nbsp;&nbsp;&middot;&nbsp;&nbsp;~${listenTime(ch.text, state.speed)} min</span>`;
+
+  playerChName.textContent = ch.title;
+  renderText(ch.text, -1);
+  updateChapterListActive();
+  updateProgress();
+  updatePosDisplay();
+  saveProgress();
+}
+
+function wordCount(t) { return t.trim().split(/\s+/).length.toLocaleString(); }
+function listenTime(t, speed) {
+  const words = t.trim().split(/\s+/).length;
+  return Math.max(1, Math.ceil(words / ((speed || 1) * 150)));
+}
+
+function renderText(text, highlightWordIdx) {
+  state.words = text.split(/(\s+)/);
+  let html = '';
+  let wordI = 0;
+  for (const chunk of state.words) {
+    if (/\s+/.test(chunk)) {
+      html += escHtml(chunk);
+    } else {
+      html += `<span class="w" data-w="${wordI}">${escHtml(chunk)}</span>`;
+      wordI++;
+    }
+  }
+  textDisplay.innerHTML = html;
+  if (highlightWordIdx >= 0) highlightWord(highlightWordIdx);
+}
+
+function highlightWord(idx) {
+  const prev = textDisplay.querySelector('.spoken-word');
+  if (prev) { prev.classList.remove('spoken-word'); prev.removeAttribute('id'); }
+  const next = textDisplay.querySelector(`[data-w="${idx}"]`);
+  if (next) { next.classList.add('spoken-word'); next.id = 'sw'; }
+}
+
+// ---- SPEECH ----
+// TODO: swap to OpenAI TTS here when ready — see comment block at top of script
+function startSpeech() {
+  if (!('speechSynthesis' in window)) {
+    showToast('Text-to-speech is not supported in this browser. Try Safari.');
+    return;
+  }
+
+  speechSynthesis.cancel();
+
+  const ch = state.chapters[state.currentChapter];
+  const text = state.charOffset > 0 && state.charOffset < ch.text.length
+    ? ch.text.slice(state.charOffset)
+    : ch.text;
+
+  const utter = new SpeechSynthesisUtterance(text.replace(/\n+/g, ' '));
+  utter.rate = state.speed;
+  if (state.voice) utter.voice = state.voice;
+  state.wordIndex = 0;
+
+  const wordsBeforeOffset = ch.text.slice(0, state.charOffset).split(/\s+/).filter(Boolean).length;
+
+  let lastSave = 0;
+  let lastScroll = 0;
+
+  utter.addEventListener('boundary', (e) => {
+    if (e.name !== 'word') return;
+    state.wordIndex++;
+    const idx = wordsBeforeOffset + state.wordIndex - 1;
+    highlightWord(idx);
+
+    // Throttle scroll to once every 2s to avoid jank
+    const now = Date.now();
+    if (now - lastScroll > 2000) {
+      lastScroll = now;
+      const sw = document.getElementById('sw');
+      if (sw) sw.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+
+    state.charOffset = Math.min(ch.text.length - 1, (state.charOffset || 0) + (e.charIndex || 0));
+    updateProgress();
+    updatePosDisplay();
+
+    // Debounce saveProgress to once every 5s
+    if (now - lastSave > 5000) {
+      lastSave = now;
+      saveProgress();
+    }
+  });
+
+  utter.addEventListener('error', (e) => {
+    // iOS sometimes fires 'interrupted' on first play before user interaction — retry once
+    if (e.error === 'interrupted' && !state.userHasInteracted) {
+      state.userHasInteracted = true;
+      setTimeout(startSpeech, 200);
+    }
+  });
+
+  utter.addEventListener('end', () => {
+    state.isPlaying = false;
+    $('play-btn').textContent = '\u25B6';
+    state.charOffset = 0;
+    saveProgress();
+    if (state.currentChapter < state.chapters.length - 1) {
+      setTimeout(() => {
+        loadChapterMaybeWeb(state.currentChapter + 1, 0)
+          .then(() => {
+            state.isPlaying = true;
+            $('play-btn').textContent = '\u23F8';
+            startSpeech();
+          })
+          .catch(() => showToast('Could not load next chapter.'));
+      }, 800);
+    }
+  });
+
+  state.isPlaying = true;
+  $('play-btn').textContent = '\u23F8';
+  speechSynthesis.speak(utter);
+}
+
+function stopSpeech() {
+  speechSynthesis.cancel();
+  state.isPlaying = false;
+  $('play-btn').textContent = '\u25B6';
+}
+
+function togglePlay() {
+  if (state.isPlaying) stopSpeech(); else startSpeech();
+}
+
+function skip(seconds) {
+  const ch = state.chapters[state.currentChapter];
+  const charsPerSec = (state.speed * 150 * 5) / 60;
+  state.charOffset = Math.max(0, Math.min(ch.text.length - 1, state.charOffset + Math.round(seconds * charsPerSec)));
+  if (state.isPlaying) { stopSpeech(); startSpeech(); state.isPlaying = true; $('play-btn').textContent = '\u23F8'; }
+  updatePosDisplay();
+}
+
+// ---- CONTROLS ----
+$('play-btn').addEventListener('click', togglePlay);
+$('rewind-btn').addEventListener('click', () => skip(-15));
+$('forward-btn').addEventListener('click', () => skip(30));
+$('prev-chapter-btn').addEventListener('click', () => {
+  if (state.currentChapter > 0) { stopSpeech(); loadChapterMaybeWeb(state.currentChapter - 1, 0); }
+});
+$('next-chapter-btn').addEventListener('click', () => {
+  if (state.currentChapter < state.chapters.length - 1) { stopSpeech(); loadChapterMaybeWeb(state.currentChapter + 1, 0); }
+});
+
+$('speed-btns').addEventListener('click', e => {
+  const btn = e.target.closest('.speed-btn');
+  if (!btn) return;
+  state.speed = parseFloat(btn.dataset.speed);
+  document.querySelectorAll('.speed-btn').forEach(b => b.classList.toggle('active', b === btn));
+  try { localStorage.setItem('inkcast_speed', state.speed); } catch(e) {}
+  if (state.isPlaying) { stopSpeech(); startSpeech(); state.isPlaying = true; $('play-btn').textContent = '\u23F8'; }
+});
+
+// Restore saved speed on load
+(function restoreSpeed() {
+  try {
+    const saved = parseFloat(localStorage.getItem('inkcast_speed'));
+    if (!isNaN(saved) && [0.75,1,1.25,1.5,2].includes(saved)) {
+      state.speed = saved;
+      document.querySelectorAll('.speed-btn').forEach(b => {
+        b.classList.toggle('active', parseFloat(b.dataset.speed) === saved);
+      });
+    }
+  } catch(e) {}
+})();
+
+$('open-chapters-btn').addEventListener('click', () => chaptersPanel.classList.add('open'));
+$('close-chapters-btn').addEventListener('click', closeChapters);
+$('panel-backdrop').addEventListener('click', closeChapters);
+function closeChapters() { chaptersPanel.classList.remove('open'); }
+
+// ---- PROGRESS ----
+const AVG_ARTICLE_CHARS = 5000; // estimate for unloaded lazy web chapters
+function updateProgress() {
+  let totalChars = 0;
+  let charsRead = 0;
+  state.chapters.forEach((ch, i) => {
+    const len = ch.text ? ch.text.length : AVG_ARTICLE_CHARS;
+    totalChars += len;
+    if (i < state.currentChapter) charsRead += len;
+    else if (i === state.currentChapter) charsRead += state.charOffset;
+  });
+  const pct = totalChars > 0 ? (charsRead / totalChars) * 100 : 0;
+  progressFill.style.width = pct + '%';
+}
+
+function updatePosDisplay() {
+  const ch = state.chapters[state.currentChapter];
+  const pct = ch.text.length > 0 ? Math.round((state.charOffset / ch.text.length) * 100) : 0;
+  const unit = state.fileType === 'pdf' ? 'section' : state.fileType === 'web' ? 'article' : 'chapter';
+  playerPos.textContent = pct + '% through ' + unit;
+}
+
+// ---- PERSISTENCE ----
+function saveProgress() {
+  if (!state.bookId) return;
+  try {
+    localStorage.setItem('inkcast_' + state.bookId, JSON.stringify({
+      chapter: state.currentChapter,
+      charOffset: state.charOffset,
+      ts: Date.now(),
+    }));
+    pruneProgress();
+  } catch(e) {}
+}
+
+function pruneProgress(max = 20) {
+  try {
+    const keys = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith('inkcast_') && k !== 'inkcast_speed' && k !== 'inkcast_voice') {
+        try {
+          const val = JSON.parse(localStorage.getItem(k));
+          keys.push({ k, ts: val.ts || 0 });
+        } catch(e) {}
+      }
+    }
+    if (keys.length <= max) return;
+    keys.sort((a, b) => b.ts - a.ts);
+    keys.slice(max).forEach(({ k }) => localStorage.removeItem(k));
+  } catch(e) {}
+}
+
+function loadProgress() {
+  if (!state.bookId) return {};
+  try {
+    const raw = localStorage.getItem('inkcast_' + state.bookId);
+    return raw ? JSON.parse(raw) : {};
+  } catch(e) { return {}; }
+}
+
+// ---- UTILS ----
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function showToast(msg) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// Wake lock: keep screen on while listening
+async function requestWakeLock() {
+  if ('wakeLock' in navigator) {
+    try { await navigator.wakeLock.request('screen'); } catch(e) {}
+  }
+}
+$('play-btn').addEventListener('click', () => { if (state.isPlaying) requestWakeLock(); });
+
+// ---- CLOUDFLARE WORKER PROXY ----
+const PROXY_URL = 'https://inkcast-proxy.chizobaobasi77.workers.dev';
+
+// ---- TAB SWITCHING ----
+$('tab-file').addEventListener('click', () => switchTab('file'));
+$('tab-url').addEventListener('click', () => switchTab('url'));
+
+function switchTab(tab) {
+  const isFile = tab === 'file';
+  $('tab-file').classList.toggle('active', isFile);
+  $('tab-url').classList.toggle('active', !isFile);
+  $('file-panel').style.display = isFile ? 'block' : 'none';
+  $('url-panel').classList.toggle('active', !isFile);
+  if (!isFile) setTimeout(() => $('url-input').focus(), 50);
+}
+
+// ---- URL FETCH ----
+$('url-go-btn').addEventListener('click', handleUrlInput);
+$('url-input').addEventListener('keydown', e => { if (e.key === 'Enter') handleUrlInput(); });
+
+async function handleUrlInput() {
+  const raw = $('url-input').value.trim();
+  if (!raw) return;
+
+  let url = raw;
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+
+  $('url-go-btn').disabled = true;
+  $('url-go-btn').textContent = '...';
+  showLoading('Fetching page...');
+
+  try {
+    const res = await fetch(PROXY_URL + '?url=' + encodeURIComponent(url));
+    const data = await res.json();
+    hideLoading();
+
+    if (data.error) { showToast('Could not fetch: ' + data.error); return; }
+
+    const doc = new DOMParser().parseFromString(data.html, 'text/html');
+    const links = extractArticleLinks(doc, data.url);
+
+    if (links.length >= 3) {
+      // Index page — load all articles as lazy chapters in the TOC
+      loadArticleIndex(doc, data.url, links);
+    } else {
+      // Single article — extract and play directly
+      const result = extractPageContent(doc, data.url);
+      if (result) loadWebArticles([result]);
+      else showToast('Could not extract readable text from this page.');
+    }
+
+  } catch(e) {
+    hideLoading();
+    showToast('Fetch failed. Check your connection.');
+  } finally {
+    $('url-go-btn').disabled = false;
+    $('url-go-btn').textContent = 'Go';
+  }
+}
+
+// ---- ARTICLE LINK EXTRACTION ----
+function extractArticleLinks(doc, baseUrl) {
+  const base = new URL(baseUrl);
+  const seen = new Set();
+  const links = [];
+
+  doc.querySelectorAll('a[href]').forEach(a => {
+    const text = a.textContent.trim();
+    if (text.length < 5 || text.length > 200) return;
+
+    // Skip nav/utility containers
+    const parent = a.closest('nav, header, footer, [role="navigation"], [role="banner"]');
+    if (parent) return;
+
+    try {
+      const href = new URL(a.getAttribute('href'), baseUrl).toString();
+      if (!href.startsWith(base.origin)) return;
+      if (seen.has(href)) return;
+      seen.add(href);
+
+      const path = new URL(href).pathname;
+      if (path === '/' || path === base.pathname) return;
+      if (/\.(css|js|png|jpg|gif|ico|xml|json|pdf)$/i.test(path)) return;
+
+      links.push({ text, href });
+    } catch(e) {}
+  });
+
+  return links.slice(0, 500);
+}
+
+// ---- INDEX PAGE — load as lazy TOC ----
+function loadArticleIndex(doc, baseUrl, links) {
+  const hostname = new URL(baseUrl).hostname.replace('www.', '');
+
+  // Build lazy chapters — text is null until fetched
+  state.chapters = links.map(({ text, href }) => ({
+    title: text,
+    text: null,   // lazy — fetched on demand
+    href,
+    loaded: false,
+  }));
+
+  state.fileType = 'web';
+  state.bookId = 'web_' + baseUrl;
+  state.currentChapter = 0;
+  state.charOffset = 0;
+
+  bookTitleTop.textContent = hostname;
+  $('panel-heading').textContent = 'Articles';
+
+  buildChapterList();
+  showPlayer();
+
+  // Show TOC immediately, prompt user to pick
+  chaptersPanel.classList.add('open');
+  chapterTitle.textContent = hostname;
+  chapterMeta.innerHTML = '<span class="type-pill pill-web">WEB</span>' +
+    '<span>' + links.length + ' articles — tap one to listen</span>';
+  textDisplay.innerHTML = '<span style="color:var(--muted);font-family:var(--mono);font-size:0.8rem">' +
+    'Open the contents panel and tap an article to start listening.</span>';
+  playerChName.textContent = 'Select an article';
+  $('player-pos').textContent = '';
+  updateProgress();
+}
+
+// ---- LOAD CHAPTER (override for lazy web chapters) ----
+// Wrap the existing loadChapter to handle lazy fetching
+const _origLoadChapter = loadChapter;
+async function loadChapterMaybeWeb(idx, charOffset) {
+  const ch = state.chapters[idx];
+
+  if (state.fileType === 'web' && ch && !ch.loaded && ch.href) {
+    // Check sessionStorage cache first
+    let cached = null;
+    try {
+      const raw = sessionStorage.getItem('inkcast_art_' + ch.href);
+      if (raw) cached = JSON.parse(raw);
+    } catch(e) {}
+
+    if (cached) {
+      ch.text = cached.text;
+      ch.title = cached.title || ch.title;
+      ch.loaded = true;
+      buildChapterList();
+    } else {
+      // Lazy fetch via Worker
+      stopSpeech();
+      showLoading('Loading article...');
+      try {
+        const res = await fetch(PROXY_URL + '?url=' + encodeURIComponent(ch.href));
+        const data = await res.json();
+        if (data.error) { hideLoading(); showToast('Could not load: ' + data.error); return; }
+        const doc = new DOMParser().parseFromString(data.html, 'text/html');
+        const result = extractPageContent(doc, ch.href);
+        if (!result) { hideLoading(); showToast('No readable text found in this article.'); return; }
+        ch.text = result.text;
+        ch.title = result.title || ch.title;
+        ch.loaded = true;
+        // Cache in sessionStorage for this session
+        try {
+          sessionStorage.setItem('inkcast_art_' + ch.href, JSON.stringify({ text: ch.text, title: ch.title }));
+        } catch(e) {}
+      } catch(e) {
+        hideLoading();
+        showToast('Fetch failed. Check your connection.');
+        return;
+      }
+      hideLoading();
+      buildChapterList();
+    }
+  }
+
+  _origLoadChapter(idx, charOffset);
+}
+
+// ---- SINGLE ARTICLE ----
+function loadWebArticles(results) {
+  state.chapters = results.map(r => ({
+    title: r.title,
+    text: r.text,
+    href: r.url,
+    loaded: true,
+  }));
+  state.fileType = 'web';
+  state.bookId = 'web_' + results[0].url;
+  state.currentChapter = 0;
+  state.charOffset = 0;
+
+  bookTitleTop.textContent = results[0].title;
+  $('panel-heading').textContent = 'Article';
+
+  buildChapterList();
+  showPlayer();
+  loadChapter(0, 0);
+}
+
+// ---- CONTENT EXTRACTION -----
+function extractPageContent(doc, url) {
+  doc.querySelectorAll('script,style,nav,header,footer,aside,[role="navigation"],[role="banner"],[role="complementary"],noscript,iframe,.nav,.menu,.sidebar,.ad,.advertisement').forEach(el => el.remove());
+
+  // Strip footnote/reference links — inline anchors whose text is short and
+  // purely numeric or bracketed (e.g. paulgraham [1], Wikipedia [edit], etc.)
+  doc.querySelectorAll('a[href]').forEach(a => {
+    const t = a.textContent.trim();
+    if (/^\[?[\d\s]+\]?$/.test(t) || /^\[(edit|note|ref|↑|↩)\]$/i.test(t)) a.remove();
+  });
+
+  const mainSelectors = ['article', 'main', '[role="main"]', '.post-content', '.article-content', '.entry-content', '.content', '#content', '#main'];
+  let container = null;
+  for (const sel of mainSelectors) {
+    const el = doc.querySelector(sel);
+    if (el && el.textContent.trim().length > 200) { container = el; break; }
+  }
+  if (!container) container = doc.body;
+
+  // Inject sentinels at <br> and block-level boundaries so textContent
+  // produces correct paragraph breaks regardless of markup style.
+  const SENTINEL = '||INKCAST_BREAK||';
+  const BLOCK_TAGS = new Set(['P','H1','H2','H3','H4','H5','H6','LI','BLOCKQUOTE','PRE','TD','TH','DIV','TR','SECTION','ARTICLE']);
+  const tw = doc.createTreeWalker(container, NodeFilter.SHOW_ELEMENT);
+  const toMark = [];
+  let twNode;
+  while ((twNode = tw.nextNode())) {
+    if (twNode.tagName === 'BR' || BLOCK_TAGS.has(twNode.tagName)) toMark.push(twNode);
+  }
+  toMark.forEach(el => el.insertAdjacentText('beforebegin', SENTINEL));
+  let text = (container.textContent || '')
+    .split(SENTINEL)
+    .map(chunk => {
+      // HTML collapses all whitespace (newlines, tabs, multiple spaces) to a
+      // single space within a block. Replicate that here since we're reading
+      // raw textContent from an unrendered DOMParser document.
+      return chunk.replace(/\s+/g, ' ').trim();
+    })
+    .filter(Boolean)
+    .join('\n\n');
+  text = text.replace(/\n{3,}/g, '\n\n').trim();
+  if (text.length < 100) return null;
+
+  const titleEl = doc.querySelector('h1') || doc.querySelector('title');
+  const title = titleEl ? titleEl.textContent.trim() : new URL(url).hostname;
+
+  return { title, url, text, type: 'web' };
+}
+
+</script>
+</body>
+</html>

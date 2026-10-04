@@ -1,0 +1,5 @@
+.DS_Store
+*.epub
+*.pdf
+*.bak
+node_modules/
